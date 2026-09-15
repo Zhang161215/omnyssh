@@ -10,7 +10,20 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
-  use: { baseURL: 'http://localhost:4173', trace: 'on-first-retry' },
+  use: {
+    baseURL: 'http://localhost:4173',
+    trace: 'on-first-retry',
+    // Product default is zh-CN; e2e locators are written against the English copy.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: 'http://localhost:4173',
+          localStorage: [{ name: 'omnyssh-locale', value: 'en' }]
+        }
+      ]
+    }
+  },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run build && npm run preview -- --port 4173 --strictPort',

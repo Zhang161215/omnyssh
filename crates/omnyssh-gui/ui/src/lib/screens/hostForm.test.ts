@@ -24,14 +24,14 @@ describe('formToInput — mirrors the TUI to_host', () => {
   it('rejects an empty name', () => {
     expect(formToInput(fields({ name: '  ', hostname: 'h' }))).toEqual({
       ok: false,
-      error: 'Name cannot be empty'
+      error: 'nameEmpty'
     });
   });
 
   it('rejects an empty hostname', () => {
     expect(formToInput(fields({ name: 'n', hostname: '  ' }))).toEqual({
       ok: false,
-      error: 'Hostname / IP cannot be empty'
+      error: 'hostnameEmpty'
     });
   });
 
@@ -66,7 +66,7 @@ describe('formToInput — mirrors the TUI to_host', () => {
       const r = formToInput(fields({ name: 'n', hostname: 'h', port }));
       expect(r).toEqual({
         ok: false,
-        error: `Port must be a number between 1 and 65535, got '${port}'`
+        error: `portRange:${port}`
       });
     }
   );

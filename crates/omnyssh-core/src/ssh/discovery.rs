@@ -10,8 +10,9 @@
 use anyhow::Result;
 use tokio::sync::mpsc;
 
-use crate::event::{CoreEvent, DetectedService};
+use crate::event::{CoreEvent, DetectedService, ServiceKind};
 use crate::ssh::probe::{generate_quick_scan_script, ProbeOutput};
+use crate::ssh::services::docker;
 use crate::ssh::services::ServiceRegistry;
 use crate::ssh::session::SshSession;
 
@@ -63,9 +64,19 @@ pub async fn quick_scan(
             Vec::new()
         };
 
+        let containers = if kind == ServiceKind::Docker {
+            probe_output
+                .get_section("DOCKER")
+                .map(docker::parse_containers)
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+
         services.push(DetectedService {
             kind: kind.clone(),
             metrics: quick_metrics,
+            containers,
         });
     }
 

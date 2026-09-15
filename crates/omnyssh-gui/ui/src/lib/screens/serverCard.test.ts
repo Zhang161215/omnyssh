@@ -114,14 +114,14 @@ describe('deriveCard — detected services', () => {
     const svc: HostServices = {
       kind: 'detected',
       services: [
-        { kind: 'docker', metrics: [{ name: 'containers_total', value: 7 }, { name: 'containers_running', value: 6 }] },
-        { kind: 'postgresql', metrics: [] }
+        { kind: 'docker', metrics: [{ name: 'containers_total', value: 7 }, { name: 'containers_running', value: 6 }], containers: [] },
+        { kind: 'postgresql', metrics: [], containers: [] }
       ]
     };
     const card = deriveCard(host(), CONNECTED, undefined, svc);
     expect(card.detectedServices).toEqual([
-      { kind: 'docker', name: 'Docker', detail: '6/7 running' },
-      { kind: 'postgresql', name: 'PostgreSQL', detail: '' }
+      { kind: 'docker', name: 'Docker', running: 6, total: 7 },
+      { kind: 'postgresql', name: 'PostgreSQL' }
     ]);
     expect(card.servicesError).toBeUndefined();
   });
@@ -129,14 +129,41 @@ describe('deriveCard — detected services', () => {
   it('reads a docker host with containers present but none running', () => {
     const svc: HostServices = {
       kind: 'detected',
-      services: [{ kind: 'docker', metrics: [{ name: 'containers_total', value: 3 }, { name: 'containers_running', value: 0 }] }]
+      services: [{ kind: 'docker', metrics: [{ name: 'containers_total', value: 3 }, { name: 'containers_running', value: 0 }], containers: [] }]
     };
-    expect(deriveCard(host(), CONNECTED, undefined, svc).detectedServices[0].detail).toBe('0/3 running');
+    expect(deriveCard(host(), CONNECTED, undefined, svc).detectedServices[0]).toEqual({
+      kind: 'docker',
+      name: 'Docker',
+      running: 0,
+      total: 3
+    });
   });
 
   it('shows no docker detail until its quick-scan metrics arrive', () => {
-    const svc: HostServices = { kind: 'detected', services: [{ kind: 'docker', metrics: [] }] };
-    expect(deriveCard(host(), CONNECTED, undefined, svc).detectedServices[0].detail).toBe('');
+    const svc: HostServices = { kind: 'detected', services: [{ kind: 'docker', metrics: [], containers: [] }] };
+    expect(deriveCard(host(), CONNECTED, undefined, svc).detectedServices[0]).toEqual({
+      kind: 'docker',
+      name: 'Docker'
+    });
+  });
+
+  it('carries running docker containers and their ports onto the card', () => {
+    const svc: HostServices = {
+      kind: 'detected',
+      services: [
+        {
+          kind: 'docker',
+          metrics: [{ name: 'containers_total', value: 1 }, { name: 'containers_running', value: 1 }],
+          containers: [
+            { id: 'abc', name: 'nginx-proxy', status: 'Up 2 hours', image: 'nginx:latest', ports: '0.0.0.0:80->80/tcp' }
+          ]
+        }
+      ]
+    };
+    const card = deriveCard(host(), CONNECTED, undefined, svc);
+    expect(card.dockerContainers).toEqual([
+      { id: 'abc', name: 'nginx-proxy', status: 'Up 2 hours', image: 'nginx:latest', ports: '0.0.0.0:80->80/tcp' }
+    ]);
   });
 
   it('surfaces a discovery failure and shows no service chips', () => {

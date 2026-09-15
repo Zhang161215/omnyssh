@@ -6,7 +6,7 @@
   // selector or a session — is visible at any moment (the §2 invariant, made legible).
   import Logo from './Logo.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
-  import { Button, Icon, StatusDot, type IconName } from '$lib/theme';
+  import { Button, Icon, StatusDot } from '$lib/theme';
   import { activeEntity } from '$lib/stores/activeEntity';
   import {
     sessions,
@@ -19,6 +19,7 @@
   import { spawnSession, closeSession } from '$lib/stores/navigation';
   import { palette } from '$lib/stores/palette';
   import { support } from '$lib/stores/support';
+  import { t, interpolate } from '$lib/i18n';
 
   // Action-first spawn (tech-gui.md §2): a spawner opens the host-picker, then creates
   // a session of its kind for the chosen host. A dismissed picker spawns nothing.
@@ -27,17 +28,14 @@
     if (host) spawnSession(kind, host.name);
   }
 
-  type Selector = { kind: 'dashboard' | 'snippets'; label: string; icon: IconName };
-  type Spawner = { kind: SessionKind; label: string; icon: IconName };
-
-  const selectors: Selector[] = [
-    { kind: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { kind: 'snippets', label: 'Snippets', icon: 'snippets' }
-  ];
-  const spawners: Spawner[] = [
-    { kind: 'sftp', label: 'SFTP', icon: 'sftp' },
-    { kind: 'terminal', label: 'Terminal', icon: 'terminal' }
-  ];
+  const selectors = $derived([
+    { kind: 'dashboard' as const, label: $t.nav.dashboard, icon: 'dashboard' as const },
+    { kind: 'snippets' as const, label: $t.nav.snippets, icon: 'snippets' as const }
+  ]);
+  const spawners = $derived([
+    { kind: 'sftp' as const, label: $t.nav.sftp, icon: 'sftp' as const },
+    { kind: 'terminal' as const, label: $t.nav.terminal, icon: 'terminal' as const }
+  ]);
 
   const rowBase = 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition';
   // The ring belongs on the focusable element, so it is applied to buttons only —
@@ -59,7 +57,7 @@
     {/if}
     <Button
       variant="icon"
-      title={$sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
+      title={$sidebarCollapsed ? $t.nav.expandSidebar : $t.nav.collapseSidebar}
       onclick={() => sidebarCollapsed.toggle()}
     >
       <Icon name={$sidebarCollapsed ? 'expand' : 'collapse'} />
@@ -136,8 +134,8 @@
                 <button
                   type="button"
                   class="shrink-0 rounded p-1 opacity-60 transition hover:opacity-100 {focusRing}"
-                  title="Close {sessionLabel(s)}"
-                  aria-label="Close {sessionLabel(s)}"
+                  title={interpolate($t.nav.closeSession, { name: sessionLabel(s) })}
+                  aria-label={interpolate($t.nav.closeSession, { name: sessionLabel(s) })}
                   onclick={() => closeSession(s.id)}
                 >
                   <Icon name="close" size={14} />
@@ -155,14 +153,14 @@
       ? 'flex flex-col items-center gap-1'
       : 'flex items-center gap-1'}"
   >
-    <Button variant="icon" title="Command palette (⌘K)" onclick={() => palette.open()}>
+    <Button variant="icon" title={$t.nav.palette} onclick={() => palette.open()}>
       <Icon name="command" />
     </Button>
     <ThemeToggle />
     <!-- Support/about overlay: free + open-source note and the two ways to help.
          Opens a modal, not a screen, so it holds no highlight and never becomes the
          active entity (§2). Sits left of the gear, icon-only so it survives collapse. -->
-    <Button variant="icon" title="Support OmnySSH" onclick={() => support.open()}>
+    <Button variant="icon" title={$t.nav.support} onclick={() => support.open()}>
       <Icon name="telegram" />
     </Button>
     <!-- Settings is a selector-like screen; the gear holds the active highlight like
@@ -173,8 +171,8 @@
       'settings'
         ? 'bg-accent text-accent-fg'
         : 'text-muted hover:bg-surface-inset hover:text-fg'}"
-      title="Settings"
-      aria-label="Settings"
+      title={$t.nav.settings}
+      aria-label={$t.nav.settings}
       aria-current={$activeEntity.kind === 'settings' ? 'page' : undefined}
       onclick={() => activeEntity.selectSettings()}
     >

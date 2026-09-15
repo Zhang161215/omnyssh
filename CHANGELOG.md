@@ -7,6 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## Unreleased
+
+### Features
+- **Simplified Chinese UI.** Desktop and TUI chrome default to 简体中文. Switch the desktop app in Settings, or run `omny --lang en` / set `ui.language` in `config.toml` for English.
+- **Running Docker containers and their ports.** Quick scan now collects `docker ps` names, status, image and published ports. The desktop host card lists them; the TUI detail view does the same, and the Docker quick view (`4`) prints a ports table.
+
 ## 1.1.2 — 2026-08-22
 
 ### Features

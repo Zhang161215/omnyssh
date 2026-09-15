@@ -10,6 +10,7 @@ use crate::app::{
     FormField, HostForm, SnippetForm, SnippetResultEntry, UpdateButton, UpdatePopup,
     UpdatePopupPhase, FORM_FIELD_LABELS, SNIPPET_FORM_FIELD_LABELS, UPDATE_BUTTONS,
 };
+use crate::i18n::{form_field, t};
 use crate::ui::theme::Theme;
 use omnyssh_core::ssh::client::Host;
 
@@ -49,7 +50,7 @@ pub fn render_help(frame: &mut Frame, theme: &Theme) {
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(" Help — Keyboard Shortcuts ")
+        .title(t(" 帮助 — 快捷键 ", " Help — Keyboard Shortcuts "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -80,214 +81,235 @@ pub fn render_help(frame: &mut Frame, theme: &Theme) {
     // Column 1: Global Navigation + Dashboard
     let mut col1_lines = vec![Line::from("")];
     col1_lines.push(Line::from(Span::styled(
-        " GLOBAL NAVIGATION",
+        t(" 全局导航", " GLOBAL NAVIGATION"),
         section_style,
     )));
     col1_lines.push(Line::from(vec![
         Span::styled("  1", key_style),
-        Span::styled("        Dashboard", desc_style),
+        Span::styled(t("        仪表盘", "        Dashboard"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  2", key_style),
-        Span::styled("        File Manager", desc_style),
+        Span::styled(t("        文件管理", "        File Manager"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  3", key_style),
-        Span::styled("        Snippets", desc_style),
+        Span::styled(t("        命令片段", "        Snippets"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  4", key_style),
-        Span::styled("        Terminal", desc_style),
+        Span::styled(t("        终端", "        Terminal"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  ?", key_style),
-        Span::styled("        Help", desc_style),
+        Span::styled(t("        帮助", "        Help"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  q", key_style),
-        Span::styled("        Quit", desc_style),
+        Span::styled(t("        退出", "        Quit"), desc_style),
     ]));
     col1_lines.push(Line::from(""));
 
-    col1_lines.push(Line::from(Span::styled(" DASHBOARD", section_style)));
+    col1_lines.push(Line::from(Span::styled(
+        t(" 仪表盘", " DASHBOARD"),
+        section_style,
+    )));
     col1_lines.push(Line::from(vec![
         Span::styled("  Enter", key_style),
-        Span::styled("    Open details", desc_style),
+        Span::styled(t("    打开详情", "    Open details"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  a", key_style),
-        Span::styled("        Add host", desc_style),
+        Span::styled(t("        添加主机", "        Add host"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  e", key_style),
-        Span::styled("        Edit host", desc_style),
+        Span::styled(t("        编辑主机", "        Edit host"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  d", key_style),
-        Span::styled("        Delete host", desc_style),
+        Span::styled(t("        删除主机", "        Delete host"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  r", key_style),
-        Span::styled("        Refresh", desc_style),
+        Span::styled(t("        刷新", "        Refresh"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  s", key_style),
-        Span::styled("        Sort", desc_style),
+        Span::styled(t("        排序", "        Sort"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  t", key_style),
-        Span::styled("        Filter tags", desc_style),
+        Span::styled(t("        按标签筛选", "        Filter tags"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  /", key_style),
-        Span::styled("        Search", desc_style),
+        Span::styled(t("        搜索", "        Search"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  x", key_style),
-        Span::styled("        Quick exec", desc_style),
+        Span::styled(t("        快速执行", "        Quick exec"), desc_style),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  K", key_style),
-        Span::styled("        Setup SSH key", desc_style),
+        Span::styled(
+            t("        配置 SSH 密钥", "        Setup SSH key"),
+            desc_style,
+        ),
     ]));
     col1_lines.push(Line::from(vec![
         Span::styled("  hjkl", key_style),
-        Span::styled("    Navigate", desc_style),
+        Span::styled(t("    浏览", "    Navigate"), desc_style),
     ]));
 
     frame.render_widget(Paragraph::new(col1_lines), columns[0]);
 
     // Column 2: Detail View + File Manager + Snippets
     let mut col2_lines = vec![Line::from("")];
-    col2_lines.push(Line::from(Span::styled(" DETAIL VIEW", section_style)));
+    col2_lines.push(Line::from(Span::styled(
+        t(" 详情", " DETAIL VIEW"),
+        section_style,
+    )));
     col2_lines.push(Line::from(vec![
         Span::styled("  Enter", key_style),
-        Span::styled("    Connect", desc_style),
+        Span::styled(t("    连接", "    Connect"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  r", key_style),
-        Span::styled("        Refresh", desc_style),
+        Span::styled(t("        刷新", "        Refresh"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  Esc", key_style),
-        Span::styled("      Back", desc_style),
+        Span::styled(t("      返回", "      Back"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  4-9", key_style),
-        Span::styled("      Quick view", desc_style),
+        Span::styled(t("      快速查看", "      Quick view"), desc_style),
     ]));
     col2_lines.push(Line::from(""));
 
-    col2_lines.push(Line::from(Span::styled(" FILE MANAGER", section_style)));
+    col2_lines.push(Line::from(Span::styled(
+        t(" 文件管理", " FILE MANAGER"),
+        section_style,
+    )));
     col2_lines.push(Line::from(vec![
         Span::styled("  hjkl", key_style),
-        Span::styled("    Navigate", desc_style),
+        Span::styled(t("    浏览", "    Navigate"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  Tab", key_style),
-        Span::styled("      Switch panel", desc_style),
+        Span::styled(t("      切换面板", "      Switch panel"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  Space", key_style),
-        Span::styled("    Mark file", desc_style),
+        Span::styled(t("    标记文件", "    Mark file"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  c", key_style),
-        Span::styled("        Copy", desc_style),
+        Span::styled(t("        复制", "        Copy"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  p", key_style),
-        Span::styled("        Paste", desc_style),
+        Span::styled(t("        粘贴", "        Paste"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  n", key_style),
-        Span::styled("        New dir", desc_style),
+        Span::styled(t("        新建目录", "        New dir"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  R", key_style),
-        Span::styled("        Rename", desc_style),
+        Span::styled(t("        重命名", "        Rename"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  D", key_style),
-        Span::styled("        Delete", desc_style),
+        Span::styled(t("        删除", "        Delete"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  H", key_style),
-        Span::styled("        Connect", desc_style),
+        Span::styled(t("        连接", "        Connect"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  .", key_style),
-        Span::styled("        Toggle hidden", desc_style),
+        Span::styled(t("        显示/隐藏", "        Toggle hidden"), desc_style),
     ]));
     col2_lines.push(Line::from(""));
 
-    col2_lines.push(Line::from(Span::styled(" SNIPPETS", section_style)));
+    col2_lines.push(Line::from(Span::styled(
+        t(" 命令片段", " SNIPPETS"),
+        section_style,
+    )));
     col2_lines.push(Line::from(vec![
         Span::styled("  Enter", key_style),
-        Span::styled("    Run snippet", desc_style),
+        Span::styled(t("    运行片段", "    Run snippet"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  n", key_style),
-        Span::styled("        New", desc_style),
+        Span::styled(t("        新建", "        New"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  e", key_style),
-        Span::styled("        Edit", desc_style),
+        Span::styled(t("        编辑", "        Edit"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  d", key_style),
-        Span::styled("        Delete", desc_style),
+        Span::styled(t("        删除", "        Delete"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  b", key_style),
-        Span::styled("        Broadcast", desc_style),
+        Span::styled(t("        广播", "        Broadcast"), desc_style),
     ]));
     col2_lines.push(Line::from(vec![
         Span::styled("  /", key_style),
-        Span::styled("        Search", desc_style),
+        Span::styled(t("        搜索", "        Search"), desc_style),
     ]));
 
     frame.render_widget(Paragraph::new(col2_lines), columns[1]);
 
     // Column 3: Terminal + Footer
     let mut col3_lines = vec![Line::from("")];
-    col3_lines.push(Line::from(Span::styled(" TERMINAL", section_style)));
+    col3_lines.push(Line::from(Span::styled(
+        t(" 终端", " TERMINAL"),
+        section_style,
+    )));
     col3_lines.push(Line::from(vec![
         Span::styled("  Ctrl+T", key_style),
-        Span::styled("   New tab", desc_style),
+        Span::styled(t("   新建标签", "   New tab"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![
         Span::styled("  Ctrl+W", key_style),
-        Span::styled("   Close tab", desc_style),
+        Span::styled(t("   关闭标签", "   Close tab"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![
         Span::styled("  Ctrl+N", key_style),
-        Span::styled("   Next tab", desc_style),
+        Span::styled(t("   下一标签", "   Next tab"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![
         Span::styled("  Ctrl+\\", key_style),
-        Span::styled("   V-split", desc_style),
+        Span::styled(t("   垂直分屏", "   V-split"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![
         Span::styled("  Ctrl+]", key_style),
-        Span::styled("   H-split", desc_style),
+        Span::styled(t("   水平分屏", "   H-split"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![
         Span::styled("  Ctrl+Q", key_style),
-        Span::styled("   Exit", desc_style),
+        Span::styled(t("   退出", "   Exit"), desc_style),
     ]));
     col3_lines.push(Line::from(""));
-    col3_lines.push(Line::from(Span::styled(" COPY TEXT", section_style)));
+    col3_lines.push(Line::from(Span::styled(
+        t(" 复制文本", " COPY TEXT"),
+        section_style,
+    )));
     col3_lines.push(Line::from(vec![
         Span::styled("  Mouse drag", key_style),
-        Span::styled(" Select text", desc_style),
+        Span::styled(t(" 选择文本", " Select text"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![
         Span::styled("  Cmd+C/Ctrl+C", key_style),
-        Span::styled(" Copy", desc_style),
+        Span::styled(t(" 复制", " Copy"), desc_style),
     ]));
     col3_lines.push(Line::from(vec![Span::styled(
-        "  (Terminal screen only)",
+        t("  （仅终端界面）", "  (Terminal screen only)"),
         Style::default()
             .fg(theme.text_secondary)
             .add_modifier(Modifier::ITALIC),
@@ -298,7 +320,7 @@ pub fn render_help(frame: &mut Frame, theme: &Theme) {
     col3_lines.push(Line::from(""));
     col3_lines.push(Line::from(""));
     col3_lines.push(Line::from(Span::styled(
-        " Press Esc or ? to close",
+        t(" 按 Esc 或 ? 关闭", " Press Esc or ? to close"),
         Style::default()
             .fg(theme.text_muted)
             .add_modifier(Modifier::ITALIC),
@@ -374,7 +396,7 @@ pub fn render_host_form(frame: &mut Frame, form: &HostForm, title: &str, theme: 
 
         // Label
         let lbl_span = Span::styled(
-            format!("  {}: ", label),
+            format!("  {}: ", form_field(label)),
             if is_focused {
                 focused_label_style
             } else {
@@ -415,21 +437,30 @@ pub fn render_host_form(frame: &mut Frame, form: &HostForm, title: &str, theme: 
                     .fg(theme.accent)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":next  ", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}  ", t("下一个", "next")),
+                Style::default().fg(theme.text_muted),
+            ),
             Span::styled(
                 "Enter",
                 Style::default()
                     .fg(theme.text_success)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":save  ", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}  ", t("保存", "save")),
+                Style::default().fg(theme.text_muted),
+            ),
             Span::styled(
                 "Esc",
                 Style::default()
                     .fg(theme.text_warning)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":cancel", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}", t("取消", "cancel")),
+                Style::default().fg(theme.text_muted),
+            ),
         ]);
         frame.render_widget(Paragraph::new(hint), rows[hint_row_idx]);
     }
@@ -458,8 +489,8 @@ pub fn render_tag_filter_popup(
     frame.render_widget(Clear, area);
 
     let title = match active_filter {
-        Some(t) => format!(" Filter by tag [{}] ", t),
-        None => " Filter by tag ".to_string(),
+        Some(tag) => format!(" {} [{}] ", t("按标签筛选", "Filter by tag"), tag),
+        None => format!(" {} ", t("按标签筛选", "Filter by tag")),
     };
 
     let block = Block::default()
@@ -476,7 +507,7 @@ pub fn render_tag_filter_popup(
     let mut items: Vec<ListItem> = vec![ListItem::new(Line::from(vec![
         Span::styled("  ", Style::default()),
         Span::styled(
-            "All (clear filter)",
+            t("全部（清除筛选）", "All (clear filter)"),
             Style::default()
                 .fg(theme.text_secondary)
                 .add_modifier(Modifier::ITALIC),
@@ -538,7 +569,7 @@ pub fn render_delete_confirm(frame: &mut Frame, host_name: &str, theme: &Theme) 
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(" Confirm Delete ")
+        .title(t(" 确认删除 ", " Confirm Delete "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -560,7 +591,7 @@ pub fn render_delete_confirm(frame: &mut Frame, host_name: &str, theme: &Theme) 
 
     frame.render_widget(
         Paragraph::new(Line::from(Span::styled(
-            format!("  Delete host '{}'?", host_name),
+            format!("  {} '{}'?", t("删除主机", "Delete host"), host_name),
             Style::default()
                 .fg(theme.text_primary)
                 .add_modifier(Modifier::BOLD),
@@ -570,7 +601,7 @@ pub fn render_delete_confirm(frame: &mut Frame, host_name: &str, theme: &Theme) 
 
     frame.render_widget(
         Paragraph::new(Line::from(vec![Span::styled(
-            "  This cannot be undone.  ",
+            t("  此操作无法撤销。  ", "  This cannot be undone.  "),
             Style::default().fg(theme.text_muted),
         )])),
         rows[2],
@@ -653,7 +684,7 @@ pub fn render_snippet_form(frame: &mut Frame, form: &SnippetForm, title: &str, t
 
         frame.render_widget(
             Paragraph::new(Line::from(Span::styled(
-                format!("  {}: ", label),
+                format!("  {}: ", form_field(label)),
                 if is_focused {
                     focused_label_style
                 } else {
@@ -694,21 +725,30 @@ pub fn render_snippet_form(frame: &mut Frame, form: &SnippetForm, title: &str, t
                         .fg(theme.accent)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(":next  ", Style::default().fg(theme.text_muted)),
+                Span::styled(
+                    format!(":{}  ", t("下一个", "next")),
+                    Style::default().fg(theme.text_muted),
+                ),
                 Span::styled(
                     "Enter",
                     Style::default()
                         .fg(theme.text_success)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(":save  ", Style::default().fg(theme.text_muted)),
+                Span::styled(
+                    format!(":{}  ", t("保存", "save")),
+                    Style::default().fg(theme.text_muted),
+                ),
                 Span::styled(
                     "Esc",
                     Style::default()
                         .fg(theme.text_warning)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(":cancel", Style::default().fg(theme.text_muted)),
+                Span::styled(
+                    format!(":{}", t("取消", "cancel")),
+                    Style::default().fg(theme.text_muted),
+                ),
             ])),
             rows[hint_row_idx],
         );
@@ -721,7 +761,7 @@ pub fn render_snippet_delete_confirm(frame: &mut Frame, snippet_name: &str, them
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(" Confirm Delete Snippet ")
+        .title(t(" 确认删除片段 ", " Confirm Delete Snippet "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -743,7 +783,7 @@ pub fn render_snippet_delete_confirm(frame: &mut Frame, snippet_name: &str, them
 
     frame.render_widget(
         Paragraph::new(Line::from(Span::styled(
-            format!("  Delete snippet '{}'?", snippet_name),
+            format!("  {} '{}'?", t("删除片段", "Delete snippet"), snippet_name),
             Style::default()
                 .fg(theme.text_primary)
                 .add_modifier(Modifier::BOLD),
@@ -753,7 +793,7 @@ pub fn render_snippet_delete_confirm(frame: &mut Frame, snippet_name: &str, them
 
     frame.render_widget(
         Paragraph::new(Line::from(Span::styled(
-            "  This cannot be undone.",
+            t("  此操作无法撤销。", "  This cannot be undone."),
             Style::default().fg(theme.text_muted),
         ))),
         rows[2],
@@ -794,7 +834,7 @@ pub fn render_param_input(
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(format!(" Parameters — {} ", snippet_name))
+        .title(format!(" {} — {} ", t("参数", "Parameters"), snippet_name))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -880,21 +920,30 @@ pub fn render_param_input(
                         .fg(theme.text_warning)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(":next  ", Style::default().fg(theme.text_muted)),
+                Span::styled(
+                    format!(":{}  ", t("下一个", "next")),
+                    Style::default().fg(theme.text_muted),
+                ),
                 Span::styled(
                     "Enter",
                     Style::default()
                         .fg(theme.text_success)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(":run  ", Style::default().fg(theme.text_muted)),
+                Span::styled(
+                    format!(":{}  ", t("运行", "run")),
+                    Style::default().fg(theme.text_muted),
+                ),
                 Span::styled(
                     "Esc",
                     Style::default()
                         .fg(theme.text_warning)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(":cancel", Style::default().fg(theme.text_muted)),
+                Span::styled(
+                    format!(":{}", t("取消", "cancel")),
+                    Style::default().fg(theme.text_muted),
+                ),
             ])),
             rows[hint_row_idx],
         );
@@ -913,7 +962,7 @@ pub fn render_broadcast_picker(
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(" Broadcast — Select Hosts ")
+        .title(t(" 广播 — 选择主机 ", " Broadcast — Select Hosts "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -996,14 +1045,20 @@ pub fn render_broadcast_picker(
                     .fg(theme.text_success)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":run  ", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}  ", t("运行", "run")),
+                Style::default().fg(theme.text_muted),
+            ),
             Span::styled(
                 "Esc",
                 Style::default()
                     .fg(theme.text_warning)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":cancel", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}", t("取消", "cancel")),
+                Style::default().fg(theme.text_muted),
+            ),
         ])),
         hint_area,
     );
@@ -1020,7 +1075,11 @@ pub fn render_quick_execute_input(
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(format!(" Quick Execute — {} ", host_name))
+        .title(format!(
+            " {} — {} ",
+            t("快速执行", "Quick Execute"),
+            host_name
+        ))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -1067,14 +1126,20 @@ pub fn render_quick_execute_input(
                     .fg(theme.text_success)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":run  ", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}  ", t("运行", "run")),
+                Style::default().fg(theme.text_muted),
+            ),
             Span::styled(
                 "Esc",
                 Style::default()
                     .fg(theme.text_warning)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":cancel", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}", t("取消", "cancel")),
+                Style::default().fg(theme.text_muted),
+            ),
         ])),
         rows[1],
     );
@@ -1101,7 +1166,7 @@ pub fn render_snippet_results(
     let spinner = SPINNER_FRAMES[(tick_count as usize / 2) % SPINNER_FRAMES.len()];
 
     let block = Block::default()
-        .title(" Results ")
+        .title(t(" 结果 ", " Results "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -1261,7 +1326,7 @@ pub fn render_key_setup_confirm(
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(" SSH Key Setup ")
+        .title(t(" SSH 密钥配置 ", " SSH Key Setup "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -1353,7 +1418,10 @@ pub fn render_key_setup_confirm(
                     .fg(theme.text_warning)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(":cancel", Style::default().fg(theme.text_muted)),
+            Span::styled(
+                format!(":{}", t("取消", "cancel")),
+                Style::default().fg(theme.text_muted),
+            ),
         ])),
         rows[9],
     );
@@ -1377,7 +1445,7 @@ pub fn render_key_setup_progress(
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(format!(" Key Setup — {} ", host_name))
+        .title(format!(" {} — {} ", t("密钥配置", "Key Setup"), host_name))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -1493,7 +1561,7 @@ pub fn render_key_setup_progress(
     } else {
         frame.render_widget(
             Paragraph::new(Line::from(Span::styled(
-                "  Please wait…",
+                t("  请稍候…", "  Please wait…"),
                 Style::default()
                     .fg(theme.text_muted)
                     .add_modifier(Modifier::ITALIC),
@@ -1510,10 +1578,10 @@ pub fn render_key_setup_progress(
 /// Label shown on an update-popup button.
 fn update_button_label(button: UpdateButton, can_self_update: bool) -> &'static str {
     match button {
-        UpdateButton::Primary if can_self_update => "Update now",
-        UpdateButton::Primary => "Remind me later",
-        UpdateButton::Skip => "Skip this version",
-        UpdateButton::Disable => "Don't check again",
+        UpdateButton::Primary if can_self_update => t("立即更新", "Update now"),
+        UpdateButton::Primary => t("稍后提醒", "Remind me later"),
+        UpdateButton::Skip => t("跳过此版本", "Skip this version"),
+        UpdateButton::Disable => t("不再检查", "Don't check again"),
     }
 }
 
@@ -1523,7 +1591,7 @@ pub fn render_update(frame: &mut Frame, popup: &UpdatePopup, theme: &Theme) {
     frame.render_widget(Clear, area);
 
     let block = Block::default()
-        .title(" Update Available ")
+        .title(t(" 有可用更新 ", " Update Available "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)

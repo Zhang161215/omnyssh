@@ -11,6 +11,7 @@ use ratatui::{
     Frame,
 };
 
+use crate::i18n::t;
 use crate::ui::theme::threshold_color;
 use crate::ui::theme::Theme;
 use omnyssh_core::event::{DetectedService, Metrics, ServiceKind};
@@ -64,9 +65,9 @@ pub struct CardData<'a> {
 /// port matters: a green line for port 8443 says nothing about SSH on 22.
 fn reachability_line(status: Option<&ConnectionStatus>, port: Option<u16>) -> (String, Color) {
     let (state, color) = match status {
-        Some(ConnectionStatus::Connected) => ("reachable", Color::Green),
-        Some(ConnectionStatus::Failed(_)) => ("unreachable", Color::Red),
-        _ => ("checking", Color::DarkGray),
+        Some(ConnectionStatus::Connected) => (t("可达", "reachable"), Color::Green),
+        Some(ConnectionStatus::Failed(_)) => (t("不可达", "unreachable"), Color::Red),
+        _ => (t("检测中", "checking"), Color::DarkGray),
     };
     let text = match port {
         Some(p) => format!("─── {state} :{p} ───"),
@@ -455,19 +456,19 @@ fn service_info(service: &DetectedService) -> String {
 
             let total = running + stopped + restarting;
             if total == 0 {
-                return String::from("no containers");
+                return String::from(t("无容器", "no containers"));
             }
 
             // Build status string with only non-zero counts
             let mut parts = Vec::new();
             if running > 0 {
-                parts.push(format!("{} running", running));
+                parts.push(format!("{} {}", running, t("运行中", "running")));
             }
             if stopped > 0 {
-                parts.push(format!("{} stopped", stopped));
+                parts.push(format!("{} {}", stopped, t("已停止", "stopped")));
             }
             if restarting > 0 {
-                parts.push(format!("{} restarting", restarting));
+                parts.push(format!("{} {}", restarting, t("重启中", "restarting")));
             }
 
             parts.join(", ")

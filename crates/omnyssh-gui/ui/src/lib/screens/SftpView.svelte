@@ -27,6 +27,7 @@
     listLocalDir,
     previewLocalFile
   } from '$lib/ipc/commands';
+  import { interpolate, t } from '$lib/i18n';
 
   let { session, active }: { session: Session; active: boolean } = $props();
 
@@ -282,17 +283,17 @@
 <div class="absolute inset-0 flex flex-col bg-surface pt-[var(--titlebar-h)] {active ? '' : 'hidden'}">
   {#if openError}
     <div class="flex flex-1 flex-col items-center justify-center gap-2 p-10 text-center">
-      <p class="font-medium">Could not open SFTP on {session.hostName}</p>
+      <p class="font-medium">{interpolate($t.sftp.openFailed, { name: session.hostName })}</p>
       <p class="max-w-md text-sm text-muted">{openError}</p>
     </div>
   {:else if !view}
     <div class="flex flex-1 items-center justify-center p-10 text-center">
-      <p class="text-sm text-muted">Connecting to {session.hostName}…</p>
+      <p class="text-sm text-muted">{interpolate($t.sftp.connecting, { name: session.hostName })}</p>
     </div>
   {:else}
     <div class="grid min-h-0 flex-1 grid-cols-2 divide-x divide-default">
       <SftpPane
-        title="Local"
+        title={$t.sftp.local}
         pane={view.local}
         onNavigate={(e) => navigate('local', e)}
         onToggleMark={(p) => toggleMark('local', p)}
@@ -302,18 +303,18 @@
           <button
             type="button"
             class={toolBtn}
-            title="Upload marked files to the remote directory"
+            title={$t.sftp.uploadTitle}
             disabled={localMarkedFiles.length === 0}
             onclick={upload}
           >
             <Icon name="upload" size={13} />
-            Upload
+            {$t.sftp.upload}
           </button>
           <button
             type="button"
             class={toolBtn}
-            title="Refresh"
-            aria-label="Refresh local"
+            title={$t.sftp.refresh}
+            aria-label={$t.sftp.refreshLocal}
             onclick={() => refreshLocal(view.local.path)}
           >
             <Icon name="refresh" size={13} />
@@ -332,21 +333,21 @@
           <button
             type="button"
             class={toolBtn}
-            title="Download marked files to the local directory"
+            title={$t.sftp.downloadTitle}
             disabled={remoteMarkedFiles.length === 0}
             onclick={download}
           >
             <Icon name="download" size={13} />
-            Download
+            {$t.sftp.download}
           </button>
-          <button type="button" class={toolBtn} title="New folder" onclick={() => openPrompt('mkdir')}>
+          <button type="button" class={toolBtn} title={$t.sftp.newFolder} onclick={() => openPrompt('mkdir')}>
             <Icon name="plus" size={13} />
-            Folder
+            {$t.sftp.folder}
           </button>
           <button
             type="button"
             class={toolBtn}
-            title="Rename the marked entry"
+            title={$t.sftp.rename}
             disabled={!singleRemoteMark}
             onclick={() => openPrompt('rename')}
           >
@@ -355,8 +356,8 @@
           <button
             type="button"
             class={toolBtn}
-            title="Delete marked entries"
-            aria-label="Delete marked entries"
+            title={$t.sftp.delete}
+            aria-label={$t.sftp.delete}
             disabled={remoteMarked.length === 0}
             onclick={remove}
           >
@@ -365,8 +366,8 @@
           <button
             type="button"
             class={toolBtn}
-            title="Refresh"
-            aria-label="Refresh remote"
+            title={$t.sftp.refresh}
+            aria-label={$t.sftp.refreshRemote}
             onclick={() => refreshRemote(view.remote.path)}
           >
             <Icon name="refresh" size={13} />
@@ -379,7 +380,7 @@
       <div class="shrink-0 border-t border-default px-4 py-2.5" aria-label="transfer progress">
         <div class="flex items-center justify-between gap-3 text-xs text-muted">
           <span class="min-w-0 truncate">
-            {transfer.kind === 'upload' ? 'Uploading' : 'Downloading'}
+            {transfer.kind === 'upload' ? $t.sftp.uploading : $t.sftp.downloading}
             <span class="font-mono text-fg">{transfer.name}</span>
           </span>
           <span class="shrink-0 tabular-nums">
@@ -404,7 +405,7 @@
 </div>
 
 {#if active && prompt}
-  <Modal label={prompt.kind === 'mkdir' ? 'New folder' : 'Rename'} onClose={() => (prompt = null)}>
+  <Modal label={prompt.kind === 'mkdir' ? $t.sftp.newFolder : $t.sftp.renameTitle} onClose={() => (prompt = null)}>
     <form
       onsubmit={(e) => {
         e.preventDefault();
@@ -413,7 +414,7 @@
     >
       <header class="border-b border-default px-5 py-3.5">
         <h2 class="text-sm font-semibold">
-          {prompt.kind === 'mkdir' ? 'New folder' : `Rename ${prompt.target?.name ?? ''}`}
+          {prompt.kind === 'mkdir' ? $t.sftp.newFolder : `${$t.sftp.renameTitle} ${prompt.target?.name ?? ''}`}
         </h2>
       </header>
       <div class="px-5 py-4">
@@ -422,8 +423,8 @@
           autofocus
           bind:value={prompt.value}
           class={field}
-          placeholder={prompt.kind === 'mkdir' ? 'Folder name' : 'New name'}
-          aria-label={prompt.kind === 'mkdir' ? 'Folder name' : 'New name'}
+          placeholder={prompt.kind === 'mkdir' ? $t.sftp.folderName : $t.sftp.newName}
+          aria-label={prompt.kind === 'mkdir' ? $t.sftp.folderName : $t.sftp.newName}
         />
       </div>
       <footer class="flex justify-end gap-2 border-t border-default px-5 py-3">
@@ -432,14 +433,14 @@
           class="rounded-full px-4 py-2 text-sm text-muted transition hover:bg-surface-inset hover:text-fg"
           onclick={() => (prompt = null)}
         >
-          Cancel
+          {$t.sftp.cancel}
         </button>
         <button
           type="submit"
           class="rounded-full bg-accent px-5 py-2 text-sm font-medium text-accent-fg transition hover:opacity-90 disabled:opacity-50"
           disabled={!prompt.value.trim()}
         >
-          {prompt.kind === 'mkdir' ? 'Create' : 'Rename'}
+          {prompt.kind === 'mkdir' ? $t.sftp.create : $t.sftp.renameAction}
         </button>
       </footer>
     </form>
@@ -447,7 +448,7 @@
 {/if}
 
 {#if active && view?.preview}
-  <Modal label="File preview" onClose={closePreview}>
+  <Modal label={$t.sftp.preview} onClose={closePreview}>
     <header class="border-b border-default px-5 py-3.5">
       <h2 class="truncate font-mono text-xs text-muted" title={view.preview.path}>
         {view.preview.path}
@@ -455,7 +456,7 @@
     </header>
     <div class="min-h-0 flex-1 overflow-auto px-5 py-4">
       {#if view.preview.content.length === 0}
-        <p class="text-sm text-faint">Empty file.</p>
+        <p class="text-sm text-faint">{$t.sftp.emptyFile}</p>
       {:else}
         <pre class="select-text whitespace-pre-wrap break-words font-mono text-xs text-fg">{view.preview
             .content}</pre>

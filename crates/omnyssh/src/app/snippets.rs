@@ -468,8 +468,8 @@ impl App {
         // Determine the command based on service kind
         let (command, service_name) = match service_kind {
             ServiceKind::Docker => (
-                "docker compose ps -a 2>/dev/null || docker ps -a",
-                "Docker Containers",
+                "docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'",
+                "Docker 容器",
             ),
             ServiceKind::Nginx => (
                 "echo '=== Nginx Status ===' && systemctl status nginx --no-pager || service nginx status",

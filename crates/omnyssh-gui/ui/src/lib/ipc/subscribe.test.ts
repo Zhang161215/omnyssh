@@ -72,7 +72,7 @@ describe('startEventBridge', () => {
       payload: { hostName: 'web-1', metrics: { cpuPercent: 5, topProcesses: [], ageSeconds: 0 } }
     });
     listeners.servicesDetected({
-      payload: { hostName: 'web-1', services: [{ kind: 'redis', metrics: [] }] }
+      payload: { hostName: 'web-1', services: [{ kind: 'redis', metrics: [], containers: [] }] }
     });
     beginRun('deploy', ['web-1']);
     listeners.snippetResult({
@@ -83,7 +83,7 @@ describe('startEventBridge', () => {
     expect(get(hosts)).toHaveLength(1);
     expect(get(statuses).get('web-1')).toEqual({ kind: 'connected' });
     expect(get(metrics).get('web-1')?.cpuPercent).toBe(5);
-    expect(get(services).get('web-1')).toEqual({ kind: 'detected', services: [{ kind: 'redis', metrics: [] }] });
+    expect(get(services).get('web-1')).toEqual({ kind: 'detected', services: [{ kind: 'redis', metrics: [], containers: [] }] });
     expect(get(snippetRun)?.entries[0]).toEqual({ hostName: 'web-1', pending: false, ok: true, output: 'done' });
     expect(get(lastError)).toBe('nope');
   });

@@ -13,10 +13,12 @@ use ratatui::{
 };
 
 use crate::app::{AppAction, AppState, SnippetPopup, ViewState};
+use crate::i18n::t;
 use crate::ui::theme::threshold_color;
 use crate::ui::theme::Theme;
 use omnyssh_core::event::{DetectedService, Metrics, ServiceKind};
 use omnyssh_core::ssh::client::{ConnectionStatus, MonitorMode};
+use omnyssh_core::ssh::services::docker::display_ports;
 
 // ---------------------------------------------------------------------------
 // Render
@@ -49,8 +51,11 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     // Minimum terminal size guard
     if area.width < 60 || area.height < 20 {
         frame.render_widget(
-            Paragraph::new("Terminal too small for detail view. (min 60x20)")
-                .style(Style::default().fg(view.theme.text_error)),
+            Paragraph::new(t(
+                "终端太小，无法显示详情。（最小 60×20）",
+                "Terminal too small for detail view. (min 60x20)",
+            ))
+            .style(Style::default().fg(view.theme.text_error)),
             area,
         );
         return;
@@ -61,7 +66,7 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
         Some(idx) => idx,
         None => {
             frame.render_widget(
-                Paragraph::new("No host selected.")
+                Paragraph::new(t("未选择主机。", "No host selected."))
                     .style(Style::default().fg(view.theme.text_error)),
                 area,
             );
@@ -134,8 +139,11 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
         render_services(frame, sections[7], svcs, &view.theme);
     } else {
         frame.render_widget(
-            Paragraph::new("  SERVICES\n\n  No discovery data available. Press 'r' to refresh.")
-                .style(Style::default().fg(view.theme.text_muted)),
+            Paragraph::new(t(
+                "  服务\n\n  暂无发现数据。按 r 刷新。",
+                "  SERVICES\n\n  No discovery data available. Press 'r' to refresh.",
+            ))
+            .style(Style::default().fg(view.theme.text_muted)),
             sections[7],
         );
     }
@@ -372,7 +380,7 @@ fn render_top_processes(frame: &mut Frame, area: Rect, metrics: Option<&Metrics>
 
 fn render_services(frame: &mut Frame, area: Rect, services: &[DetectedService], theme: &Theme) {
     let mut lines = vec![Line::from(Span::styled(
-        " SERVICES",
+        t(" 服务", " SERVICES"),
         Style::default()
             .fg(theme.title)
             .add_modifier(Modifier::BOLD),
@@ -380,7 +388,7 @@ fn render_services(frame: &mut Frame, area: Rect, services: &[DetectedService], 
 
     if services.is_empty() {
         lines.push(Line::from(Span::styled(
-            " No services detected",
+            t(" 未检测到服务", " No services detected"),
             Style::default().fg(theme.text_muted),
         )));
     } else {
@@ -408,10 +416,56 @@ fn render_services(frame: &mut Frame, area: Rect, services: &[DetectedService], 
             ]);
 
             lines.push(line);
+
+            if service.kind == ServiceKind::Docker {
+                if service.containers.is_empty() {
+                    lines.push(Line::from(Span::styled(
+                        t(
+                            "    （当前没有运行中的容器）",
+                            "    (no running containers)",
+                        ),
+                        Style::default().fg(theme.text_muted),
+                    )));
+                } else {
+                    lines.push(Line::from(Span::styled(
+                        t(
+                            "    容器                         占用端口",
+                            "    CONTAINER                    PORTS",
+                        ),
+                        Style::default().fg(theme.text_muted),
+                    )));
+                    for container in &service.containers {
+                        let ports = display_ports(&container.ports);
+                        let ports = if ports.is_empty() {
+                            t("未发布", "unpublished").to_string()
+                        } else {
+                            ports
+                        };
+                        lines.push(Line::from(vec![
+                            Span::raw("    "),
+                            Span::styled(
+                                format!("{:<28}", truncate_name(&container.name, 28)),
+                                Style::default().fg(theme.text_primary),
+                            ),
+                            Span::styled(ports, Style::default().fg(theme.accent)),
+                        ]));
+                    }
+                }
+            }
         }
     }
 
     frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
+}
+
+fn truncate_name(name: &str, max: usize) -> String {
+    if name.chars().count() <= max {
+        name.to_string()
+    } else {
+        let mut s: String = name.chars().take(max.saturating_sub(1)).collect();
+        s.push('…');
+        s
+    }
 }
 
 /// Get icon for service kind.
@@ -466,9 +520,15 @@ fn service_status_display(service: &DetectedService) -> String {
                 }
             }
             if stopped > 0 {
-                format!("{} running, {} stopped", running, stopped)
+                format!(
+                    "{} {}, {} {}",
+                    running,
+                    t("运行中", "running"),
+                    stopped,
+                    t("已停止", "stopped")
+                )
             } else {
-                format!("{} containers running", running)
+                format!("{} {}", running, t("个容器运行中", "containers running"))
             }
         }
         ServiceKind::PostgreSQL => {
@@ -553,7 +613,10 @@ fn render_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Connect", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            t(":连接", ":Connect"),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "r",
@@ -561,7 +624,10 @@ fn render_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Refresh", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            t(":刷新", ":Refresh"),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "Esc",
@@ -569,7 +635,10 @@ fn render_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":← Dashboard", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            t(":← 仪表盘", ":← Dashboard"),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "4-9",
@@ -577,7 +646,10 @@ fn render_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Quick view", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            t(":快速查看", ":Quick view"),
+            Style::default().fg(theme.text_muted),
+        ),
     ]);
 
     frame.render_widget(Paragraph::new(hints), area);

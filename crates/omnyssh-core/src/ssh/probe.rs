@@ -18,7 +18,7 @@ cat /etc/os-release 2>/dev/null | head -5
 echo "===OMNYSSH:SERVICES==="
 systemctl list-units --type=service --state=running --no-pager --no-legend 2>/dev/null | awk '{print $1}' | head -50
 echo "===OMNYSSH:DOCKER==="
-docker ps --format '{{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}' 2>/dev/null | head -30
+docker ps --format '{{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}' 2>/dev/null | head -50
 echo "===OMNYSSH:LISTEN==="
 ss -tlnp 2>/dev/null | tail -n +2 | head -30
 echo "===OMNYSSH:PROCESS==="
@@ -221,5 +221,6 @@ def456	db-master	Up 5 days	postgres:15
         assert!(script.contains("/etc/os-release"));
         assert!(script.contains("systemctl list-units"));
         assert!(script.contains("docker ps"));
+        assert!(script.contains("{{.Ports}}"));
     }
 }

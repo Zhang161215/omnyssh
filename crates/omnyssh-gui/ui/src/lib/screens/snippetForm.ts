@@ -45,13 +45,13 @@ export type FormResult = { ok: true; snippet: SnippetDto } | { ok: false; error:
  *  dropped to `undefined` when empty (so the wire form stays sparse, §4.1). */
 export function formToSnippet(f: SnippetFormFields): FormResult {
   const name = f.name.trim();
-  if (!name) return { ok: false, error: 'Name cannot be empty' };
+  if (!name) return { ok: false, error: 'nameEmpty' };
   const command = f.command.trim();
-  if (!command) return { ok: false, error: 'Command cannot be empty' };
+  if (!command) return { ok: false, error: 'commandEmpty' };
   const scope: SnippetScopeDto = f.scope === 'host' ? 'host' : 'global';
   const host = f.host.trim();
   if (scope === 'host' && !host) {
-    return { ok: false, error: "Host is required when scope is 'host'" };
+    return { ok: false, error: 'hostRequired' };
   }
   const tags = splitCsv(f.tags);
   const params = splitCsv(f.params);

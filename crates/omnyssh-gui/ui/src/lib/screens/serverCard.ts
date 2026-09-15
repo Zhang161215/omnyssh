@@ -5,6 +5,7 @@
 import { derived } from 'svelte/store';
 import type {
   ConnectionStatusDto,
+  DockerContainerDto,
   HostDto,
   MetricsDto,
   ProcessDto,
@@ -28,7 +29,12 @@ export function metricStatus(percent: number): Status {
 
 export type MetricRow = { label: string; percent: number | null; status: Status };
 
-export type CardService = { kind: ServiceKindDto; name: string; detail: string };
+export type CardService = {
+  kind: ServiceKindDto;
+  name: string;
+  running?: number;
+  total?: number;
+};
 
 /** Reachability of a `tcpPort` host; `undefined` for an SSH-monitored one. */
 type Reachability = 'reachable' | 'unreachable' | 'checking';
@@ -46,6 +52,8 @@ export interface ServerCard {
   osInfo?: string;
   topProcesses: ProcessDto[];
   detectedServices: CardService[];
+  /** Running Docker containers (and occupied ports) when Docker was detected. */
+  dockerContainers: DockerContainerDto[];
   servicesError?: string;
 }
 
@@ -78,16 +86,11 @@ function metricValue(service: ServiceDto, name: string): number | undefined {
   return service.metrics.find((m) => m.name === name)?.value;
 }
 
-// The discovery quick-scan only carries Docker container counts (see the core's
-// `docker::quick_metrics`); the other kinds arrive with no quick metrics, so their
-// chip shows just the service name. Empty detail => name only (tech-gui.md §4.1).
-function serviceDetail(service: ServiceDto): string {
-  if (service.kind !== 'docker') return '';
+function serviceSummary(service: ServiceDto): Pick<CardService, 'running' | 'total'> {
+  if (service.kind !== 'docker') return {};
   const total = metricValue(service, 'containers_total');
-  if (total == null) return '';
-  if (total === 0) return 'no containers';
-  const running = metricValue(service, 'containers_running') ?? 0;
-  return `${running}/${total} running`;
+  if (total == null) return {};
+  return { total, running: metricValue(service, 'containers_running') ?? 0 };
 }
 
 /** Build a card's view state from a host and its live status/metrics/services. */
@@ -108,7 +111,8 @@ export function deriveCard(
       reachability: kind === 'connected' ? 'reachable' : kind === 'failed' ? 'unreachable' : 'checking',
       metricRows: [],
       topProcesses: [],
-      detectedServices: []
+      detectedServices: [],
+      dockerContainers: []
     };
   }
 
@@ -127,7 +131,11 @@ export function deriveCard(
 
   const detectedServices: CardService[] =
     svc?.kind === 'detected'
-      ? svc.services.map((s) => ({ kind: s.kind, name: SERVICE_NAMES[s.kind], detail: serviceDetail(s) }))
+      ? svc.services.map((s) => ({ kind: s.kind, name: SERVICE_NAMES[s.kind], ...serviceSummary(s) }))
+      : [];
+  const dockerContainers =
+    svc?.kind === 'detected'
+      ? (svc.services.find((s) => s.kind === 'docker')?.containers ?? [])
       : [];
 
   return {
@@ -139,6 +147,7 @@ export function deriveCard(
     osInfo: m?.osInfo ?? undefined,
     topProcesses: m?.topProcesses ?? [],
     detectedServices,
+    dockerContainers,
     servicesError: svc?.kind === 'failed' ? svc.message : undefined
   };
 }

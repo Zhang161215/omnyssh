@@ -26,6 +26,7 @@ use ratatui::{
 };
 
 use crate::app::{AppAction, AppState, NavDir, ViewState};
+use crate::i18n::t;
 use crate::ui::card::{render_card, CardData, CARD_HEIGHT, CARD_MIN_WIDTH};
 use crate::ui::{host_list, popup};
 
@@ -40,8 +41,11 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     // Minimum terminal size guard.
     if area.width < 40 || area.height < 10 {
         frame.render_widget(
-            Paragraph::new("Terminal too small for dashboard.")
-                .style(Style::default().fg(view.theme.text_error)),
+            Paragraph::new(t(
+                "终端太小，无法显示仪表盘。",
+                "Terminal too small for dashboard.",
+            ))
+            .style(Style::default().fg(view.theme.text_error)),
             area,
         );
         return;
@@ -65,9 +69,11 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     if let Some(popup) = &hlv.popup {
         use crate::app::HostPopup;
         match popup {
-            HostPopup::Add(form) => popup::render_host_form(frame, form, "Add Host", &view.theme),
+            HostPopup::Add(form) => {
+                popup::render_host_form(frame, form, t("添加主机", "Add Host"), &view.theme)
+            }
             HostPopup::Edit { form, .. } => {
-                popup::render_host_form(frame, form, "Edit Host", &view.theme)
+                popup::render_host_form(frame, form, t("编辑主机", "Edit Host"), &view.theme)
             }
             HostPopup::DeleteConfirm(idx) => {
                 let name = state
@@ -117,42 +123,53 @@ fn render_header(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewSta
     let hlv = &view.host_list;
     let mut spans = vec![
         Span::styled(
-            " Dashboard ",
+            t(" 仪表盘 ", " Dashboard "),
             Style::default()
                 .fg(view.theme.title)
                 .add_modifier(Modifier::BOLD),
         ),
         Span::styled("  ", Style::default()),
         Span::styled(
-            format!("[sort: {}]", hlv.sort_order.label()),
+            format!("[{}: {}]", t("排序", "sort"), hlv.sort_order.label()),
             Style::default().fg(view.theme.accent),
         ),
         Span::styled("  ", Style::default()),
     ];
     if let Some(tag) = &hlv.tag_filter {
         spans.push(Span::styled(
-            format!("[filter: {}]", tag),
+            format!("[{}: {}]", t("筛选", "filter"), tag),
             Style::default().fg(view.theme.text_warning),
         ));
         spans.push(Span::styled("  ", Style::default()));
     }
     if !hlv.search_query.is_empty() {
         spans.push(Span::styled(
-            format!("[search: {}]", hlv.search_query),
+            format!("[{}: {}]", t("搜索", "search"), hlv.search_query),
             Style::default().fg(view.theme.highlight),
         ));
         spans.push(Span::styled("  ", Style::default()));
     }
 
     // Build key hints.
-    let mut hints = String::from("r:refresh  s:sort  t:tags  /:search  a:add  x:execute");
+    let mut hints = format!(
+        "{}  {}:{}  {}:{}  /:{}  {}:{}",
+        t("r:刷新", "r:refresh"),
+        "s",
+        t("排序", "sort"),
+        "t",
+        t("标签", "tags"),
+        t("搜索", "search"),
+        "a",
+        t("添加", "add"),
+    );
+    hints.push_str(&format!("  x:{}", t("执行", "execute")));
 
     // Check if selected host needs SSH key setup.
     // Show "Shift+K:ssh-setup" hint if selected host has password but no identity_file.
     if let Some(idx) = hlv.selected_host_idx() {
         if let Some(host) = state.hosts.get(idx) {
             if host.password.is_some() && host.identity_file.is_none() {
-                hints.push_str("  Shift+K:ssh-setup");
+                hints.push_str(&format!("  Shift+K:{}", t("配置密钥", "ssh-setup")));
             }
         }
     }
@@ -177,9 +194,10 @@ fn render_grid(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState
 
     if state.hosts.is_empty() {
         frame.render_widget(
-            Paragraph::new(
+            Paragraph::new(t(
+                "\n  还没有主机。\n\n  按  a  添加主机，或按  r  从 ~/.ssh/config 重新加载。",
                 "\n  No hosts configured.\n\n  Press  a  to add a host, or  r  to reload from ~/.ssh/config.",
-            )
+            ))
             .style(Style::default().fg(view.theme.text_muted)),
             area,
         );
@@ -188,8 +206,11 @@ fn render_grid(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState
 
     if hlv.filtered_indices.is_empty() {
         frame.render_widget(
-            Paragraph::new("\n  No hosts match the current filter.")
-                .style(Style::default().fg(view.theme.text_muted)),
+            Paragraph::new(t(
+                "\n  没有主机匹配当前筛选。",
+                "\n  No hosts match the current filter.",
+            ))
+            .style(Style::default().fg(view.theme.text_muted)),
             area,
         );
         return;

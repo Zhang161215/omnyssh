@@ -3,6 +3,7 @@ use clap::Parser;
 mod app;
 mod cli;
 mod event;
+mod i18n;
 mod keybindings;
 mod term_input;
 mod ui;
@@ -106,6 +107,15 @@ async fn main() -> anyhow::Result<()> {
             );
         }
     }
+
+    // Apply CLI language override if provided.
+    if let Some(ref lang) = cli.lang {
+        app_config.ui.language = lang.clone();
+        if let Err(e) = omnyssh_core::config::app_config::save_language_to_config(lang) {
+            eprintln!("Warning: Failed to save language to config: {}", e);
+        }
+    }
+    i18n::init(&app_config.ui.language);
 
     let mut app = app::App::new(app_config);
     let result = app.run().await;

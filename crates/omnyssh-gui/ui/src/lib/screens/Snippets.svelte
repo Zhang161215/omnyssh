@@ -15,6 +15,7 @@
   import SnippetRunner from './SnippetRunner.svelte';
   import SnippetResults from './SnippetResults.svelte';
   import Modal from '$lib/components/Modal.svelte';
+  import { interpolate, t } from '$lib/i18n';
 
   type Dialog =
     | { kind: 'add' }
@@ -44,7 +45,7 @@
     // `name` is the snippet's key on disk (§4.2). Refuse to clobber a *different*
     // snippet that already owns this name; an in-place edit (name unchanged) is fine.
     if (get(snippets).some((s) => s.name === snippet.name && s.name !== previousName)) {
-      throw new Error(`A snippet named "${snippet.name}" already exists`);
+      throw new Error(interpolate($t.snippets.exists, { name: snippet.name }));
     }
     // Save the new entry before dropping the old name on a rename: a mid-way failure
     // then leaves a recoverable duplicate, never a lost snippet.
@@ -97,27 +98,27 @@
 
 <section class="flex h-full flex-col px-6 pb-6 pt-3">
   <div class="mb-5 flex items-center gap-3">
-    <h1 class="text-lg font-semibold tracking-tight">Snippets</h1>
+    <h1 class="text-lg font-semibold tracking-tight">{$t.snippets.title}</h1>
     <div class="ml-auto w-full max-w-xs">
-      <input bind:value={query} class={search} placeholder="Search snippets…" aria-label="Search snippets" />
+      <input bind:value={query} class={search} placeholder={$t.snippets.search} aria-label={$t.snippets.search} />
     </div>
     <button type="button" class={pill} onclick={() => (dialog = { kind: 'add' })}>
       <Icon name="plus" size={13} />
-      New snippet
+      {$t.snippets.newSnippet}
     </button>
   </div>
 
   {#if filtered.length === 0}
     <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center">
       {#if $snippets.length === 0}
-        <p class="font-medium">No snippets yet</p>
-        <p class="text-sm text-muted">Save a command to run it on your hosts in one click.</p>
+        <p class="font-medium">{$t.snippets.emptyTitle}</p>
+        <p class="text-sm text-muted">{$t.snippets.emptyBody}</p>
         <button type="button" class="{pill} mt-2" onclick={() => (dialog = { kind: 'add' })}>
           <Icon name="plus" size={13} />
-          New snippet
+          {$t.snippets.newSnippet}
         </button>
       {:else}
-        <p class="text-sm text-muted">No snippets match “{query}”.</p>
+        <p class="text-sm text-muted">{interpolate($t.snippets.noMatch, { query })}</p>
       {/if}
     </div>
   {:else}
@@ -130,7 +131,7 @@
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="truncate font-medium" title={snippet.name}>{snippet.name}</span>
-                <Chip>{snippet.scope === 'host' && snippet.host ? `host · ${snippet.host}` : 'global'}</Chip>
+                <Chip>{snippet.scope === 'host' && snippet.host ? interpolate($t.snippets.host, { name: snippet.host }) : $t.snippets.global}</Chip>
                 {#each snippet.tags ?? [] as tag (tag)}
                   <Chip variant="outline">{tag}</Chip>
                 {/each}
@@ -143,17 +144,17 @@
               <button
                 type="button"
                 class={pill}
-                title="Run {snippet.name}"
-                aria-label="Run {snippet.name}"
+                title={interpolate($t.snippets.runNamed, { name: snippet.name })}
+                aria-label={interpolate($t.snippets.runNamed, { name: snippet.name })}
                 onclick={() => (dialog = { kind: 'run', snippet })}
               >
                 <Icon name="play" size={12} />
-                Run
+                {$t.snippets.run}
               </button>
-              <button type="button" class={iconBtn} title="Edit {snippet.name}" aria-label="Edit {snippet.name}" onclick={() => (dialog = { kind: 'edit', snippet })}>
+              <button type="button" class={iconBtn} title={interpolate($t.snippets.edit, { name: snippet.name })} aria-label={interpolate($t.snippets.edit, { name: snippet.name })} onclick={() => (dialog = { kind: 'edit', snippet })}>
                 <Icon name="edit" size={15} />
               </button>
-              <button type="button" class={iconBtn} title="Delete {snippet.name}" aria-label="Delete {snippet.name}" onclick={() => (dialog = { kind: 'delete', snippet })}>
+              <button type="button" class={iconBtn} title={interpolate($t.snippets.delete, { name: snippet.name })} aria-label={interpolate($t.snippets.delete, { name: snippet.name })} onclick={() => (dialog = { kind: 'delete', snippet })}>
                 <Icon name="trash" size={15} />
               </button>
             </div>
@@ -184,15 +185,15 @@
   />
 {:else if dialog?.kind === 'delete'}
   {@const snippet = dialog.snippet}
-  <Modal label="Delete snippet" onClose={() => (dialog = null)}>
+  <Modal label={$t.snippets.deleteTitle} onClose={() => (dialog = null)}>
     <div class="space-y-3 px-5 py-4">
-      <h2 class="text-sm font-semibold">Delete snippet</h2>
+      <h2 class="text-sm font-semibold">{$t.snippets.deleteTitle}</h2>
       <p class="text-sm text-muted">
-        Delete “{snippet.name}”? This removes it from <span class="font-mono">snippets.toml</span>.
+        {interpolate($t.snippets.deleteBody, { name: snippet.name })}
       </p>
       <div class="flex justify-end gap-2 pt-1">
-        <Button variant="ghost" onclick={() => (dialog = null)}>Cancel</Button>
-        <Button variant="primary" onclick={() => confirmDelete(snippet.name)}>Delete</Button>
+        <Button variant="ghost" onclick={() => (dialog = null)}>{$t.snippets.cancel}</Button>
+        <Button variant="primary" onclick={() => confirmDelete(snippet.name)}>{$t.snippets.deleteAction}</Button>
       </div>
     </div>
   </Modal>

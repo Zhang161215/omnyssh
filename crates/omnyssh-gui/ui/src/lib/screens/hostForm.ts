@@ -72,9 +72,9 @@ export type HostFormResult = { ok: true; input: HostInputDto } | { ok: false; er
  *  preserves any existing value across an edit. */
 export function formToInput(f: HostFormFields): HostFormResult {
   const name = f.name.trim();
-  if (!name) return { ok: false, error: 'Name cannot be empty' };
+  if (!name) return { ok: false, error: 'nameEmpty' };
   const hostname = f.hostname.trim();
-  if (!hostname) return { ok: false, error: 'Hostname / IP cannot be empty' };
+  if (!hostname) return { ok: false, error: 'hostnameEmpty' };
   const user = f.user.trim() || 'root';
 
   const portRaw = f.port.trim();
@@ -83,7 +83,7 @@ export function formToInput(f: HostFormFields): HostFormResult {
     // Digits with an optional leading `+`, matching Rust's `u16::parse` (which accepts
     // `+22` but no `-`/decimal/hex/exponent); the range guard covers 0 and overflow.
     if (!/^\+?\d+$/.test(portRaw) || Number(portRaw) < 1 || Number(portRaw) > 65535) {
-      return { ok: false, error: `Port must be a number between 1 and 65535, got '${portRaw}'` };
+      return { ok: false, error: `portRange:${portRaw}` };
     }
     port = Number(portRaw);
   }
@@ -95,7 +95,7 @@ export function formToInput(f: HostFormFields): HostFormResult {
     if (!/^\+?\d+$/.test(monitorPortRaw) || Number(monitorPortRaw) < 1 || Number(monitorPortRaw) > 65535) {
       return {
         ok: false,
-        error: `Probe port must be a number between 1 and 65535, got '${monitorPortRaw}'`
+        error: `probePortRange:${monitorPortRaw}`
       };
     }
     monitorPort = Number(monitorPortRaw);

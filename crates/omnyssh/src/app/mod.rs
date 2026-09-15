@@ -93,10 +93,10 @@ impl SortOrder {
     /// Human-readable label for display in the dashboard header.
     pub fn label(&self) -> &'static str {
         match self {
-            SortOrder::Name => "name",
+            SortOrder::Name => crate::i18n::t("名称", "name"),
             SortOrder::Cpu => "cpu",
-            SortOrder::Ram => "ram",
-            SortOrder::Status => "status",
+            SortOrder::Ram => crate::i18n::t("内存", "ram"),
+            SortOrder::Status => crate::i18n::t("状态", "status"),
         }
     }
 }
