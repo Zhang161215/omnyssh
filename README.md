@@ -49,7 +49,9 @@ No account, no login screen, no telemetry. The app opens with an empty dashboard
 You add a server once. After that it sits on the dashboard as a card with live CPU, RAM and disk, uptime, distro, the top processes eating your CPU, and a badge for what runs on it. One click on `sh` drops you into a real PTY terminal. One click on `files` opens a two panel SFTP browser. Ten servers fit on one screen and refresh on their own.
 
 ### Live dashboard
-Cards for every host with CPU, RAM and disk bars, uptime, OS version, top processes, and a Docker badge showing how many containers are up. Bars turn yellow, then red, so a sick server is obvious from across the room.
+Cards for every host with CPU, RAM and disk bars, uptime, OS version, top processes, and a **Docker 统计** control when Docker is present. Click it to open a panel of **running containers and the ports they occupy** — the card itself does not list them. Bars turn yellow, then red, so a sick server is obvious from across the room.
+
+The desktop UI defaults to **Simplified Chinese**. Switch back to English in Settings. The TUI uses the same default; pass `--lang en` or set `ui.language` in `config.toml` for English.
 
 ### Real terminals
 Full PTY sessions in tabs. Open as many servers as you need, switch between them from the sidebar, and keep them running while you work in the dashboard.
@@ -129,7 +131,7 @@ brew install timhartmann7/tap/omnyssh
 nix run github:timhartmann7/omnyssh
 ```
 
-Then run `omny`. Press `a` to add a host, `/` to search, `?` for help, `Shift+K` to set up keys on the selected host.
+Then run `omny`. The interface defaults to Simplified Chinese (`omny --lang en` for English). Press `a` to add a host, `/` to search, `?` for help, `Shift+K` to set up keys on the selected host. On a host with Docker, open the detail view (`Enter` on a card) and press `4` for **Docker 统计** — a popup of running containers and the ports they occupy. The detail view does not list them until then.
 
 Prebuilt TUI binaries for Linux, macOS, Windows and Termux live on the [Releases](https://github.com/timhartmann7/omnyssh/releases) page under the `omny-*` files. Config sits in `~/.config/omnyssh/` on Linux, `~/Library/Application Support/omnyssh/` on macOS, `%APPDATA%\omnyssh\` on Windows. Your `~/.ssh/config` is read at startup and never written to.
 

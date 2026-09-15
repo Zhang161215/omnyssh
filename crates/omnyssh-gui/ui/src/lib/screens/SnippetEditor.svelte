@@ -8,6 +8,7 @@
   import Modal from '$lib/components/Modal.svelte';
   import Select from '$lib/components/Select.svelte';
   import { formToSnippet, type SnippetFormFields } from './snippetForm';
+  import { t, formatError } from '$lib/i18n';
 
   let {
     mode,
@@ -36,7 +37,7 @@
   async function save(): Promise<void> {
     const result = formToSnippet(fields);
     if (!result.ok) {
-      error = result.error;
+      error = formatError(result.error, $t);
       return;
     }
     error = null;
@@ -56,7 +57,7 @@
     'focus-visible:ring-2 focus-visible:ring-focus placeholder:text-faint';
 </script>
 
-<Modal label={mode === 'add' ? 'New snippet' : 'Edit snippet'} onClose={onCancel}>
+<Modal label={mode === 'add' ? $t.snippetEditor.add : $t.snippetEditor.edit} onClose={onCancel}>
   <form
     onsubmit={(e) => {
       e.preventDefault();
@@ -65,17 +66,17 @@
     class="flex min-h-0 flex-col"
   >
     <header class="border-b border-default px-5 py-3.5">
-      <h2 class="text-sm font-semibold">{mode === 'add' ? 'New snippet' : 'Edit snippet'}</h2>
+      <h2 class="text-sm font-semibold">{mode === 'add' ? $t.snippetEditor.add : $t.snippetEditor.edit}</h2>
     </header>
 
     <div class="min-h-0 flex-1 space-y-3.5 overflow-y-auto px-5 py-4">
       <label class={label}>
-        <span>Name</span>
+        <span>{$t.snippetEditor.name}</span>
         <input bind:this={nameEl} bind:value={fields.name} class={field} placeholder="restart-service" />
       </label>
 
       <label class={label}>
-        <span>Command</span>
+        <span>{$t.snippetEditor.command}</span>
         <textarea
           bind:value={fields.command}
           rows="3"
@@ -86,30 +87,30 @@
 
       <div class="grid grid-cols-2 gap-3">
         <label class={label}>
-          <span>Scope</span>
+          <span>{$t.snippetEditor.scope}</span>
           <Select bind:value={fields.scope} class={field}>
-            <option value="global">global</option>
-            <option value="host">host</option>
+            <option value="global">{$t.snippetEditor.global}</option>
+            <option value="host">{$t.snippetEditor.host}</option>
           </Select>
         </label>
         <label class={label}>
-          <span>Host {fields.scope === 'host' ? '(required)' : '(optional)'}</span>
+          <span>{fields.scope === 'host' ? $t.snippetEditor.hostRequired : $t.snippetEditor.hostOptional}</span>
           <input bind:value={fields.host} class={field} placeholder="web-1" />
         </label>
       </div>
 
       <label class={label}>
-        <span>Tags</span>
+        <span>{$t.snippetEditor.tags}</span>
         <input bind:value={fields.tags} class={field} placeholder="ops, deploy" />
       </label>
 
       <div class="space-y-1">
         <label class={label}>
-          <span>Params</span>
+          <span>{$t.snippetEditor.params}</span>
           <input bind:value={fields.params} class={field} placeholder="service, timeout" />
         </label>
         <p class="text-[11px] text-faint">
-          Comma-separated names, referenced as {'{{name}}'} in the command.
+          {$t.snippetEditor.paramsHint}
         </p>
       </div>
 
@@ -119,9 +120,9 @@
     </div>
 
     <footer class="flex justify-end gap-2 border-t border-default px-5 py-3">
-      <Button variant="ghost" onclick={onCancel}>Cancel</Button>
+      <Button variant="ghost" onclick={onCancel}>{$t.snippetEditor.cancel}</Button>
       <Button variant="primary" type="submit" disabled={saving}>
-        {mode === 'add' ? 'Add snippet' : 'Save'}
+        {mode === 'add' ? $t.snippetEditor.addAction : $t.snippetEditor.save}
       </Button>
     </footer>
   </form>

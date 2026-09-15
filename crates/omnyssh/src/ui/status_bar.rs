@@ -7,6 +7,7 @@ use ratatui::{
 };
 
 use crate::app::{AppState, FileManagerPopup, Screen, SnippetPopup, ViewState};
+use crate::i18n::t;
 
 /// Renders the bottom status bar with context-sensitive key hints.
 pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState) {
@@ -53,18 +54,21 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     if hlv.search_mode {
         let line = Line::from(vec![
             Span::styled(
-                " [SEARCH] ",
+                t(" [搜索] ", " [SEARCH] "),
                 Style::default()
                     .fg(Color::Black)
                     .bg(Color::Cyan)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(" type to filter  ", Style::default().fg(Color::Gray)),
+            Span::styled(
+                t(" 输入以筛选  ", " type to filter  "),
+                Style::default().fg(Color::Gray),
+            ),
             key!("Enter"),
-            hint!("confirm"),
+            hint!(t("确认", "confirm")),
             sep!(),
             key!("Esc"),
-            hint!("clear"),
+            hint!(t("清除", "clear")),
         ]);
         frame.render_widget(
             Paragraph::new(line).style(Style::default().bg(Color::Reset)),
@@ -79,36 +83,39 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
         let line = match popup {
             HostPopup::Add(_) | HostPopup::Edit { .. } => Line::from(vec![
                 key!("Tab"),
-                hint!("next field"),
+                hint!(t("下一字段", "next field")),
                 sep!(),
                 key!("Shift+Tab"),
-                hint!("prev field"),
+                hint!(t("上一字段", "prev field")),
                 sep!(),
                 key!("Enter"),
-                hint!("save"),
+                hint!(t("保存", "save")),
                 sep!(),
                 key!("Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             HostPopup::DeleteConfirm(_) => Line::from(vec![
                 key!("y"),
-                hint!("confirm delete"),
+                hint!(t("确认删除", "confirm delete")),
                 sep!(),
                 key!("n / Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             HostPopup::KeySetupConfirm(_) => Line::from(vec![
                 key!("y / Enter"),
-                hint!("confirm setup"),
+                hint!(t("确认配置", "confirm setup")),
                 sep!(),
                 key!("n / Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             HostPopup::KeySetupProgress { .. } => Line::from(vec![
-                Span::styled(" Setting up SSH keys… ", hint_style),
+                Span::styled(
+                    t(" 正在配置 SSH 密钥… ", " Setting up SSH keys… "),
+                    hint_style,
+                ),
                 sep!(),
                 key!("Esc"),
-                hint!("close"),
+                hint!(t("关闭", "close")),
             ]),
         };
         frame.render_widget(
@@ -122,18 +129,21 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     if view.snippets_view.search_mode {
         let line = Line::from(vec![
             Span::styled(
-                " [SEARCH] ",
+                t(" [搜索] ", " [SEARCH] "),
                 Style::default()
                     .fg(Color::Black)
                     .bg(Color::Green)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(" type to filter  ", Style::default().fg(Color::Gray)),
+            Span::styled(
+                t(" 输入以筛选  ", " type to filter  "),
+                Style::default().fg(Color::Gray),
+            ),
             key!("Enter"),
-            hint!("confirm"),
+            hint!(t("确认", "confirm")),
             sep!(),
             key!("Esc"),
-            hint!("clear"),
+            hint!(t("清除", "clear")),
         ]);
         frame.render_widget(
             Paragraph::new(line).style(Style::default().bg(Color::Reset)),
@@ -147,60 +157,60 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
         let line = match popup {
             SnippetPopup::Add(_) | SnippetPopup::Edit { .. } => Line::from(vec![
                 key!("Tab"),
-                hint!("next field"),
+                hint!(t("下一字段", "next field")),
                 sep!(),
                 key!("Shift+Tab"),
-                hint!("prev field"),
+                hint!(t("上一字段", "prev field")),
                 sep!(),
                 key!("Enter"),
-                hint!("save"),
+                hint!(t("保存", "save")),
                 sep!(),
                 key!("Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             SnippetPopup::DeleteConfirm(_) => Line::from(vec![
                 key!("y"),
-                hint!("confirm delete"),
+                hint!(t("确认删除", "confirm delete")),
                 sep!(),
                 key!("n / Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             SnippetPopup::ParamInput { .. } => Line::from(vec![
                 key!("Tab"),
-                hint!("next param"),
+                hint!(t("下一参数", "next param")),
                 sep!(),
                 key!("Enter"),
-                hint!("run"),
+                hint!(t("运行", "run")),
                 sep!(),
                 key!("Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             SnippetPopup::BroadcastPicker { .. } => Line::from(vec![
                 key!("j/k"),
-                hint!("navigate"),
+                hint!(t("浏览", "navigate")),
                 sep!(),
                 key!("Space"),
-                hint!("toggle"),
+                hint!(t("切换", "toggle")),
                 sep!(),
                 key!("Enter"),
-                hint!("run"),
+                hint!(t("运行", "run")),
                 sep!(),
                 key!("Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             SnippetPopup::QuickExecuteInput { .. } => Line::from(vec![
                 key!("Enter"),
-                hint!("run"),
+                hint!(t("运行", "run")),
                 sep!(),
                 key!("Esc"),
-                hint!("cancel"),
+                hint!(t("取消", "cancel")),
             ]),
             SnippetPopup::Results { .. } => Line::from(vec![
                 key!("j/k"),
-                hint!("scroll"),
+                hint!(t("滚动", "scroll")),
                 sep!(),
                 key!("Esc"),
-                hint!("close"),
+                hint!(t("关闭", "close")),
             ]),
         };
         frame.render_widget(
@@ -216,27 +226,27 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
             let line = match fm_popup {
                 FileManagerPopup::HostPicker { .. } => Line::from(vec![
                     key!("j/k"),
-                    hint!("navigate"),
+                    hint!(t("浏览", "navigate")),
                     sep!(),
                     key!("Enter"),
-                    hint!("connect"),
+                    hint!(t("连接", "connect")),
                     sep!(),
                     key!("Esc"),
-                    hint!("cancel"),
+                    hint!(t("取消", "cancel")),
                 ]),
                 FileManagerPopup::DeleteConfirm { .. } => Line::from(vec![
                     key!("y"),
-                    hint!("confirm delete"),
+                    hint!(t("确认删除", "confirm delete")),
                     sep!(),
                     key!("n / Esc"),
-                    hint!("cancel"),
+                    hint!(t("取消", "cancel")),
                 ]),
                 FileManagerPopup::MkDir(_) | FileManagerPopup::Rename { .. } => Line::from(vec![
                     key!("Enter"),
-                    hint!("confirm"),
+                    hint!(t("确认", "confirm")),
                     sep!(),
                     key!("Esc"),
-                    hint!("cancel"),
+                    hint!(t("取消", "cancel")),
                 ]),
                 FileManagerPopup::TransferProgress {
                     filename,
@@ -250,7 +260,7 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
                         0
                     };
                     Line::from(vec![Span::styled(
-                        format!(" Transferring: {}  {}% ", filename, pct),
+                        format!(" {}: {}  {}% ", t("传输中", "Transferring"), filename, pct),
                         hint_style,
                     )])
                 }
@@ -267,13 +277,13 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     if hlv.tag_popup_open {
         let line = Line::from(vec![
             key!("j/k"),
-            hint!("navigate"),
+            hint!(t("浏览", "navigate")),
             sep!(),
             key!("Enter"),
-            hint!("select"),
+            hint!(t("选择", "select")),
             sep!(),
             key!("Esc"),
-            hint!("close"),
+            hint!(t("关闭", "close")),
         ]);
         frame.render_widget(
             Paragraph::new(line).style(Style::default().bg(Color::Reset)),
@@ -285,22 +295,22 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     // Global hints only - screen-specific hints are now in page headers.
     let spans = vec![
         key!("1"),
-        hint!("Dashboard"),
+        hint!(t("仪表盘", "Dashboard")),
         sep!(),
         key!("2"),
-        hint!("Files"),
+        hint!(t("文件", "Files")),
         sep!(),
         key!("3"),
-        hint!("Snippets"),
+        hint!(t("片段", "Snippets")),
         sep!(),
         key!("4"),
-        hint!("Terminal"),
+        hint!(t("终端", "Terminal")),
         sep!(),
         key!("?"),
-        hint!("Help"),
+        hint!(t("帮助", "Help")),
         sep!(),
         key!("q"),
-        hint!("Quit"),
+        hint!(t("退出", "Quit")),
     ];
 
     frame.render_widget(

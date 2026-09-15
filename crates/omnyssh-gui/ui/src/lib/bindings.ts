@@ -418,6 +418,10 @@ export type CommandError = { message: string }
  */
 export type ConnectionStatusDto = { kind: "unknown" } | { kind: "connecting" } | { kind: "connected" } | { kind: "failed"; message: string }
 /**
+ * A running Docker container from the discovery quick-scan (name, image, ports).
+ */
+export type DockerContainerDto = { id: string; name: string; status: string; image: string; ports: string }
+/**
  * A background error surfaced to the user.
  */
 export type Error = { message: string }
@@ -506,7 +510,7 @@ export type ProcessDto = { name: string; cpuPercent: number; memPercent: number 
 /**
  * A service detected on a host with its quick-scan metrics (tech-gui.md §4.1).
  */
-export type ServiceDto = { kind: ServiceKindDto; metrics: ServiceMetricDto[] }
+export type ServiceDto = { kind: ServiceKindDto; metrics: ServiceMetricDto[]; containers: DockerContainerDto[] }
 /**
  * A service kind detected on a host, mirrors `omnyssh_core::event::ServiceKind`.
  * Wire names are lowercase (`docker`, `nginx`, `postgresql`, `redis`, `nodejs`);

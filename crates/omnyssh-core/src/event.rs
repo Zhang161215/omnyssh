@@ -156,11 +156,28 @@ pub enum CoreEvent {
 // Smart Server Context — Data structures
 // ---------------------------------------------------------------------------
 
+/// A running Docker container discovered by the Quick Scan probe.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DockerContainer {
+    /// Short container ID from `docker ps`.
+    pub id: String,
+    /// Container name.
+    pub name: String,
+    /// Status text, e.g. `Up 2 hours`.
+    pub status: String,
+    /// Image reference, e.g. `nginx:latest`.
+    pub image: String,
+    /// Published/exposed ports as Docker prints them, e.g. `0.0.0.0:8080->80/tcp`.
+    pub ports: String,
+}
+
 /// Describes a service detected on a remote server.
 #[derive(Debug, Clone)]
 pub struct DetectedService {
     pub kind: ServiceKind,
     pub metrics: Vec<ServiceMetric>,
+    /// Running Docker containers (and the ports they occupy). Empty for other kinds.
+    pub containers: Vec<DockerContainer>,
 }
 
 /// Type of service detected on the server.

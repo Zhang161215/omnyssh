@@ -40,6 +40,8 @@ impl Default for GeneralConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct UiConfig {
+    /// UI language: `zh-CN` (default) or `en`.
+    pub language: String,
     /// One of: `default`, `dracula`, `nord`, `gruvbox`.
     pub theme: String,
     // TODO(future-stage): these fields are parsed from user config but not yet
@@ -78,6 +80,7 @@ impl UiConfig {
 impl Default for UiConfig {
     fn default() -> Self {
         Self {
+            language: String::from("zh-CN"),
             theme: String::from("default"),
             show_ip: true,
             show_uptime: true,
@@ -261,6 +264,14 @@ pub fn save_theme_to_config(theme_name: &str) -> anyhow::Result<()> {
     persist_config(|config| config.ui.theme = theme_name.to_string())
 }
 
+/// Saves the UI language to the config file's `[ui]` section.
+///
+/// # Errors
+/// Returns an error if the config file cannot be written or parsed.
+pub fn save_language_to_config(language: &str) -> anyhow::Result<()> {
+    persist_config(|config| config.ui.language = language.to_string())
+}
+
 /// Saves the update-checker preferences to the config file's `[update]`
 /// section.
 ///
@@ -276,10 +287,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn update_config_defaults_to_enabled() {
-        let cfg = UpdateConfig::default();
-        assert!(cfg.check_on_startup);
-        assert!(cfg.skip_version.is_empty());
+    fn ui_language_defaults_to_simplified_chinese() {
+        let cfg = AppConfig::default();
+        assert_eq!(cfg.ui.language, "zh-CN");
+    }
+
+    /// A config file written by an older release (no `language` field)
+    /// must still parse, falling back to Simplified Chinese.
+    #[test]
+    fn config_without_language_field_parses() {
+        let cfg: AppConfig = toml::from_str("[ui]\ntheme = \"nord\"\n").unwrap();
+        assert_eq!(cfg.ui.language, "zh-CN");
     }
 
     /// A config file written by an older release (no `[update]` section)

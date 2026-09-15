@@ -12,6 +12,7 @@
   import { offerUpdate } from '$lib/stores/update';
   import { lastError } from '$lib/stores/notifications';
   import { checkUpdate, loadUpdateConfig, saveUpdateConfig } from '$lib/ipc/commands';
+  import { locale, t, interpolate, type Locale } from '$lib/i18n';
 
   const message = (e: unknown): string => (e instanceof Error ? e.message : String(e));
   const formatInterval = (secs: number): string => (secs < 60 ? `${secs}s` : `${secs / 60}m`);
@@ -75,16 +76,15 @@
 </script>
 
 <section class="mx-auto h-full max-w-2xl p-6">
-  <h1 class="mb-5 text-lg font-semibold tracking-tight">Settings</h1>
+  <h1 class="mb-5 text-lg font-semibold tracking-tight">{$t.settings.title}</h1>
 
   <div class="space-y-4">
-    <!-- Appearance -->
     <Surface class="p-5">
-      <h2 class="mb-3 text-sm font-semibold">Appearance</h2>
+      <h2 class="mb-3 text-sm font-semibold">{$t.settings.appearance}</h2>
       <div class="flex items-center justify-between gap-4">
         <div>
-          <p class="text-sm">Theme</p>
-          <p class="text-xs text-muted">Mirrors the sidebar toggle.</p>
+          <p class="text-sm">{$t.settings.theme}</p>
+          <p class="text-xs text-muted">{$t.settings.themeHint}</p>
         </div>
         <div class="flex gap-1 rounded-xl bg-surface-inset p-1">
           <button
@@ -93,7 +93,7 @@
             aria-pressed={$theme === 'light'}
             onclick={() => theme.set('light')}
           >
-            <span class="flex items-center gap-1.5"><Icon name="sun" size={14} /> Light</span>
+            <span class="flex items-center gap-1.5"><Icon name="sun" size={14} /> {$t.settings.light}</span>
           </button>
           <button
             type="button"
@@ -101,27 +101,42 @@
             aria-pressed={$theme === 'dark'}
             onclick={() => theme.set('dark')}
           >
-            <span class="flex items-center gap-1.5"><Icon name="moon" size={14} /> Dark</span>
+            <span class="flex items-center gap-1.5"><Icon name="moon" size={14} /> {$t.settings.dark}</span>
           </button>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-between gap-4 border-t border-default pt-4">
+        <div>
+          <p class="text-sm">{$t.settings.language}</p>
+          <p class="text-xs text-muted">{$t.settings.languageHint}</p>
+        </div>
+        <div class="flex gap-1 rounded-xl bg-surface-inset p-1">
+          {#each [{ id: 'zh-CN', label: $t.settings.zh }, { id: 'en', label: $t.settings.en }] as lang (lang.id)}
+            <button
+              type="button"
+              class="{seg} {segState($locale === lang.id)}"
+              aria-pressed={$locale === lang.id}
+              onclick={() => locale.set(lang.id as Locale)}
+            >
+              {lang.label}
+            </button>
+          {/each}
         </div>
       </div>
     </Surface>
 
-    <!-- Privacy -->
     <Surface class="p-5">
-      <h2 class="mb-3 text-sm font-semibold">Privacy</h2>
+      <h2 class="mb-3 text-sm font-semibold">{$t.settings.privacy}</h2>
       <div class="flex items-center justify-between gap-4">
         <div class="min-w-0">
-          <p class="text-sm">Streamer mode</p>
-          <p class="text-xs text-muted">
-            Mask host addresses with realistic fakes, so real IPs stay off-screen while recording.
-          </p>
+          <p class="text-sm">{$t.settings.streamer}</p>
+          <p class="text-xs text-muted">{$t.settings.streamerHint}</p>
         </div>
         <button
           type="button"
           role="switch"
           aria-checked={$streamerMode}
-          aria-label="Streamer mode"
+          aria-label={$t.settings.streamer}
           onclick={() => streamerMode.toggle()}
           class="relative h-6 w-11 shrink-0 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus {$streamerMode
             ? 'bg-accent'
@@ -136,13 +151,12 @@
       </div>
     </Surface>
 
-    <!-- Dashboard -->
     <Surface class="p-5">
-      <h2 class="mb-3 text-sm font-semibold">Dashboard</h2>
+      <h2 class="mb-3 text-sm font-semibold">{$t.settings.dashboard}</h2>
       <div class="flex items-center justify-between gap-4">
         <div>
-          <p class="text-sm">Auto-refresh interval</p>
-          <p class="text-xs text-muted">How often the dashboard forces a metric refresh.</p>
+          <p class="text-sm">{$t.settings.interval}</p>
+          <p class="text-xs text-muted">{$t.settings.intervalHint}</p>
         </div>
         <div class="flex flex-wrap justify-end gap-1 rounded-xl bg-surface-inset p-1">
           {#each REFRESH_OPTIONS as secs (secs)}
@@ -159,20 +173,19 @@
       </div>
     </Surface>
 
-    <!-- Updates -->
     <Surface class="p-5">
-      <h2 class="mb-3 text-sm font-semibold">Updates</h2>
+      <h2 class="mb-3 text-sm font-semibold">{$t.settings.updates}</h2>
       <div class="space-y-4">
         <div class="flex items-center justify-between gap-4">
           <div>
-            <p class="text-sm">Check for updates on startup</p>
-            <p class="text-xs text-muted">Look for a newer release when the app launches.</p>
+            <p class="text-sm">{$t.settings.checkOnStartup}</p>
+            <p class="text-xs text-muted">{$t.settings.checkOnStartupHint}</p>
           </div>
           <button
             type="button"
             role="switch"
             aria-checked={updateConfig?.checkOnStartup ?? false}
-            aria-label="Check for updates on startup"
+            aria-label={$t.settings.checkOnStartup}
             disabled={!updateConfig}
             onclick={toggleCheckOnStartup}
             class="relative h-6 w-11 shrink-0 rounded-full transition disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus {updateConfig?.checkOnStartup
@@ -189,13 +202,13 @@
 
         <div class="flex items-center justify-between gap-4 border-t border-default pt-4">
           <div class="min-w-0">
-            <p class="text-sm">Manual check</p>
+            <p class="text-sm">{$t.settings.manualCheck}</p>
             <p class="text-xs text-muted">
-              {#if check.kind === 'checking'}Checking…
-              {:else if check.kind === 'upToDate'}You're on the latest version.
-              {:else if check.kind === 'available'}Version {check.version} is available.
+              {#if check.kind === 'checking'}{$t.settings.checking}
+              {:else if check.kind === 'upToDate'}{$t.settings.upToDate}
+              {:else if check.kind === 'available'}{interpolate($t.settings.available, { version: check.version })}
               {:else if check.kind === 'error'}{check.message}
-              {:else}Check GitHub for a newer release.
+              {:else}{$t.settings.checkGithub}
               {/if}
             </p>
           </div>
@@ -206,7 +219,7 @@
             onclick={checkNow}
           >
             <Icon name="refresh" size={14} />
-            Check now
+            {$t.settings.checkNow}
           </button>
         </div>
       </div>

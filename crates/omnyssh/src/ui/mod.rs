@@ -4,6 +4,7 @@ use ratatui::{
 };
 
 use crate::app::{AppState, Screen, SnippetPopup, ViewState};
+use crate::i18n::t;
 
 pub mod card;
 pub mod dashboard;
@@ -25,9 +26,10 @@ pub fn render(frame: &mut Frame, state: &AppState, view: &ViewState) {
     // Check minimum terminal size.
     let area = frame.area();
     if area.width < 80 || area.height < 24 {
-        let msg = ratatui::widgets::Paragraph::new(
+        let msg = ratatui::widgets::Paragraph::new(t(
+            "终端太小 — 请调整到至少 80×24。",
             "Terminal too small — please resize to at least 80×24.",
-        )
+        ))
         .style(ratatui::style::Style::default().fg(ratatui::style::Color::Red));
         frame.render_widget(msg, area);
         return;

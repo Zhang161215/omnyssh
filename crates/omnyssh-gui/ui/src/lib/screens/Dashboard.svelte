@@ -20,8 +20,13 @@
   import { emptyForm, formFromHost } from './hostForm';
   import HostEditor from './HostEditor.svelte';
   import Modal from '$lib/components/Modal.svelte';
+  import { interpolate, t } from '$lib/i18n';
 
-  type Dialog = { kind: 'add' } | { kind: 'edit'; host: HostDto } | { kind: 'delete'; host: HostDto };
+  type Dialog =
+    | { kind: 'add' }
+    | { kind: 'edit'; host: HostDto }
+    | { kind: 'delete'; host: HostDto }
+    | { kind: 'docker'; hostName: string };
 
   let dialog = $state<Dialog | null>(null);
 
@@ -74,7 +79,7 @@
     // Adding: refuse a name already taken (a save would silently overwrite it). An
     // edit keeps its name (the name field is immutable, §4.1), so it can't collide.
     if (!previousName && get(hosts).some((h) => h.name === input.name)) {
-      throw new Error(`A host named "${input.name}" already exists`);
+      throw new Error(interpolate($t.dashboard.hostExists, { name: input.name }));
     }
     await saveHost(input);
     await reloadHosts();
@@ -125,7 +130,7 @@
 
 <section class="min-h-full px-6 pb-8 pt-3">
   <div class="mb-5 flex items-center gap-3">
-    <h1 class="text-lg font-semibold tracking-tight">Dashboard</h1>
+    <h1 class="text-lg font-semibold tracking-tight">{$t.dashboard.title}</h1>
     <div class="ml-auto flex items-center gap-2">
       <!-- Host search: a round toggle that slides a live filter field out to its left. -->
       <div class="flex items-center">
@@ -133,8 +138,8 @@
           bind:this={searchInput}
           bind:value={query}
           type="text"
-          placeholder="Search hosts…"
-          aria-label="Search hosts"
+          placeholder={$t.dashboard.searchHosts}
+          aria-label={$t.dashboard.searchHosts}
           disabled={!searchOpen}
           class="{search} {searchOpen
             ? 'mr-2 w-52 px-3 opacity-100'
@@ -146,8 +151,8 @@
         <button
           type="button"
           class={roundBtn}
-          title={searchOpen ? 'Close search' : 'Search hosts'}
-          aria-label={searchOpen ? 'Close search' : 'Search hosts'}
+          title={searchOpen ? $t.dashboard.closeSearch : $t.dashboard.searchHostsTitle}
+          aria-label={searchOpen ? $t.dashboard.closeSearch : $t.dashboard.searchHostsTitle}
           aria-expanded={searchOpen}
           onclick={toggleSearch}
         >
@@ -159,8 +164,8 @@
       <button
         type="button"
         class="{roundBtn} disabled:opacity-60"
-        title="Refresh metrics (R)"
-        aria-label="Refresh metrics"
+        title={$t.dashboard.refresh}
+        aria-label={$t.dashboard.refresh}
         disabled={refreshing}
         onclick={() => refresh()}
       >
@@ -170,23 +175,23 @@
       </button>
       <button type="button" class={pill} onclick={() => (dialog = { kind: 'add' })}>
         <Icon name="plus" size={13} />
-        Add host
+        {$t.dashboard.addHost}
       </button>
     </div>
   </div>
 
   {#if $serverCards.length === 0}
     <div class="flex flex-col items-center justify-center gap-2 py-20 text-center">
-      <p class="font-medium">No servers yet</p>
-      <p class="text-sm text-muted">Add a host, or import one from your SSH config, to see it here.</p>
+      <p class="font-medium">{$t.dashboard.emptyTitle}</p>
+      <p class="text-sm text-muted">{$t.dashboard.emptyBody}</p>
       <button type="button" class="{pill} mt-2" onclick={() => (dialog = { kind: 'add' })}>
         <Icon name="plus" size={13} />
-        Add host
+        {$t.dashboard.addHost}
       </button>
     </div>
   {:else if visibleCards.length === 0}
     <div class="flex flex-col items-center justify-center gap-2 py-20 text-center">
-      <p class="text-sm text-muted">No hosts match “{query}”.</p>
+      <p class="text-sm text-muted">{interpolate($t.dashboard.noMatch, { query })}</p>
     </div>
   {:else}
     <div class="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(19rem,1fr))]">
@@ -205,9 +210,9 @@
                   {#if card.host.source === 'sshConfig'}
                     <span
                       class="shrink-0 rounded-full border border-default px-1.5 py-0.5 text-[10px] text-faint"
-                      title="Imported from ~/.ssh/config — editing saves your own copy, which takes priority"
+                      title={$t.dashboard.sshConfigTitle}
                     >
-                      ssh config
+                      {$t.dashboard.sshConfig}
                     </span>
                   {/if}
                   <!-- Auth-state reflection (tech-gui.md §4.2): key-only once password
@@ -215,18 +220,18 @@
                   {#if card.host.passwordAuthDisabled}
                     <span
                       class="inline-flex shrink-0 items-center gap-1 rounded-full border border-default px-1.5 py-0.5 text-[10px] text-faint"
-                      title="Password authentication disabled — key only"
+                      title={$t.dashboard.keyOnlyTitle}
                     >
                       <Icon name="shield" size={10} />
-                      key-only
+                      {$t.dashboard.keyOnly}
                     </span>
                   {:else if card.host.hasKey}
                     <span
                       class="inline-flex shrink-0 items-center gap-1 rounded-full border border-default px-1.5 py-0.5 text-[10px] text-faint"
-                      title="Key authentication configured"
+                      title={$t.dashboard.keyTitle}
                     >
                       <Icon name="key" size={10} />
-                      key
+                      {$t.dashboard.key}
                     </span>
                   {/if}
                 </div>
@@ -241,11 +246,13 @@
                 <button
                   type="button"
                   class={pill}
-                  title="{action.label} on {card.host.name}"
+                  title={action.id === 'sh'
+                    ? interpolate($t.dashboard.shOn, { name: card.host.name })
+                    : interpolate($t.dashboard.filesOn, { name: card.host.name })}
                   onclick={() => spawnSession(action.kind, card.host.name)}
                 >
                   <Icon name={action.kind} size={13} />
-                  {action.label}
+                  {$t.quick[action.id]}
                 </button>
               {/each}
               <!-- Key setup stays manual-only even though edit no longer is: it records
@@ -256,8 +263,8 @@
                 <button
                   type="button"
                   class={iconBtn}
-                  title="Set up an SSH key for {card.host.name}"
-                  aria-label="Set up an SSH key for {card.host.name}"
+                  title={interpolate($t.dashboard.setupKey, { name: card.host.name })}
+                  aria-label={interpolate($t.dashboard.setupKey, { name: card.host.name })}
                   onclick={() => setupKey(card.host)}
                 >
                   <Icon name="key" size={14} />
@@ -269,8 +276,8 @@
               <button
                 type="button"
                 class={iconBtn}
-                title="Edit {card.host.name}"
-                aria-label="Edit {card.host.name}"
+                title={interpolate($t.dashboard.edit, { name: card.host.name })}
+                aria-label={interpolate($t.dashboard.edit, { name: card.host.name })}
                 onclick={() => (dialog = { kind: 'edit', host: card.host })}
               >
                 <Icon name="edit" size={14} />
@@ -279,8 +286,8 @@
                 <button
                   type="button"
                   class={iconBtn}
-                  title="Delete {card.host.name}"
-                  aria-label="Delete {card.host.name}"
+                  title={interpolate($t.dashboard.delete, { name: card.host.name })}
+                  aria-label={interpolate($t.dashboard.delete, { name: card.host.name })}
                   onclick={() => (dialog = { kind: 'delete', host: card.host })}
                 >
                   <Icon name="trash" size={14} />
@@ -295,15 +302,27 @@
               class="rounded-lg bg-surface-inset px-3 py-3 text-center text-xs"
               style="color: {statusToken(card.overall)};"
             >
-              {card.reachability}{card.host.monitorPort ? ` · port ${card.host.monitorPort}` : ''}
+              {card.reachability === 'reachable'
+                ? $t.dashboard.reachable
+                : card.reachability === 'unreachable'
+                  ? $t.dashboard.unreachable
+                  : $t.dashboard.checking}{card.host.monitorPort
+                ? ` · ${interpolate($t.dashboard.port, { port: card.host.monitorPort })}`
+                : ''}
             </div>
           {:else if card.offline}
-            <div class="rounded-lg bg-surface-inset px-3 py-3 text-center text-xs text-faint">offline</div>
+            <div class="rounded-lg bg-surface-inset px-3 py-3 text-center text-xs text-faint">{$t.dashboard.offline}</div>
           {:else}
             <div class="space-y-2">
               {#each card.metricRows as row (row.label)}
                 <div class="flex items-center gap-3">
-                  <span class="w-9 shrink-0 text-[11px] uppercase tracking-wider text-faint">{row.label}</span>
+                  <span class="w-9 shrink-0 text-[11px] uppercase tracking-wider text-faint">
+                    {row.label === 'CPU'
+                      ? $t.metrics.cpu
+                      : row.label === 'RAM'
+                        ? $t.metrics.ram
+                        : $t.metrics.disk}
+                  </span>
                   <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-inset">
                     {#if row.percent != null}
                       <div
@@ -325,7 +344,7 @@
 
             {#if card.uptime || card.osInfo}
               <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-                {#if card.uptime}<span>up {card.uptime}</span>{/if}
+                {#if card.uptime}<span>{interpolate($t.dashboard.up, { uptime: card.uptime })}</span>{/if}
                 {#if card.uptime && card.osInfo}<span class="text-faint">·</span>{/if}
                 {#if card.osInfo}<span class="min-w-0 truncate">{card.osInfo}</span>{/if}
               </div>
@@ -343,15 +362,27 @@
             {/if}
           {/if}
 
-          <!-- Detected services -->
+          <!-- Detected services. Docker names/ports stay off the card until 「Docker 统计」. -->
           {#if card.detectedServices.length}
             <div class="flex flex-wrap gap-1.5">
               {#each card.detectedServices as service (service.kind)}
-                <Chip>{service.detail ? `${service.name} · ${service.detail}` : service.name}</Chip>
+                {#if service.kind === 'docker'}
+                  <button
+                    type="button"
+                    class="inline-flex items-center rounded-full bg-surface-inset px-3 py-1 text-xs font-medium text-fg transition hover:bg-accent hover:text-accent-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                    title={$t.docker.stats}
+                    aria-label={$t.docker.stats}
+                    onclick={() => (dialog = { kind: 'docker', hostName: card.host.name })}
+                  >
+                    {$t.docker.stats}
+                  </button>
+                {:else}
+                  <Chip>{service.name}</Chip>
+                {/if}
               {/each}
             </div>
           {:else if card.servicesError}
-            <div class="text-xs text-faint">Service scan unavailable</div>
+            <div class="text-xs text-faint">{$t.dashboard.scanUnavailable}</div>
           {/if}
         </Surface>
       {/each}
@@ -373,16 +404,69 @@
   />
 {:else if dialog?.kind === 'delete'}
   {@const host = dialog.host}
-  <Modal label="Delete host" onClose={() => (dialog = null)}>
+  <Modal label={$t.dashboard.deleteTitle} onClose={() => (dialog = null)}>
     <div class="space-y-3 px-5 py-4">
-      <h2 class="text-sm font-semibold">Delete host</h2>
+      <h2 class="text-sm font-semibold">{$t.dashboard.deleteTitle}</h2>
       <p class="text-sm text-muted">
-        Delete “{host.name}”? This removes it from <span class="font-mono">hosts.toml</span>. If
-        your SSH config defines the same name, it comes back as an import.
+        {interpolate($t.dashboard.deleteBody, { name: host.name })}
       </p>
       <div class="flex justify-end gap-2 pt-1">
-        <Button variant="ghost" onclick={() => (dialog = null)}>Cancel</Button>
-        <Button variant="primary" onclick={() => confirmDelete(host.name)}>Delete</Button>
+        <Button variant="ghost" onclick={() => (dialog = null)}>{$t.dashboard.cancel}</Button>
+        <Button variant="primary" onclick={() => confirmDelete(host.name)}>{$t.dashboard.deleteAction}</Button>
+      </div>
+    </div>
+  </Modal>
+{:else if dialog?.kind === 'docker'}
+  {@const dockerHostName = dialog.kind === 'docker' ? dialog.hostName : ''}
+  {@const dockerCard = $serverCards.find((c) => c.host.name === dockerHostName)}
+  {@const dockerSvc = dockerCard?.detectedServices.find((s) => s.kind === 'docker')}
+  <Modal label={$t.docker.stats} onClose={() => (dialog = null)}>
+    <div class="space-y-3 px-5 py-4">
+      <h2 class="text-sm font-semibold">{$t.docker.stats}</h2>
+      {#if dockerCard}
+        <p class="text-sm text-muted">
+          {dockerCard.host.name}
+          {#if dockerSvc?.total != null}
+            <span class="text-faint">
+              · {dockerSvc.total === 0
+                ? $t.docker.none
+                : interpolate($t.docker.ofTotal, {
+                    running: dockerSvc.running ?? 0,
+                    total: dockerSvc.total
+                  })}
+            </span>
+          {/if}
+        </p>
+        {#if dockerCard.dockerContainers.length}
+          <div class="max-h-[48vh] overflow-auto">
+            <div
+              class="mb-1.5 grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-3 text-[11px] uppercase tracking-wider text-faint"
+            >
+              <span>{$t.docker.container}</span>
+              <span class="text-right">{$t.docker.ports}</span>
+            </div>
+            <ul class="space-y-1.5">
+              {#each dockerCard.dockerContainers as c (c.id + c.name)}
+                <li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] items-start gap-3 text-xs">
+                  <span class="min-w-0 truncate font-mono text-muted" title={c.image}>{c.name}</span>
+                  <span
+                    class="min-w-0 break-all text-right text-faint"
+                    title={c.ports || $t.docker.unpublished}
+                  >
+                    {c.ports || $t.docker.unpublished}
+                  </span>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {:else}
+          <p class="text-sm text-muted">{$t.docker.empty}</p>
+        {/if}
+      {:else}
+        <p class="text-sm text-muted">{$t.docker.empty}</p>
+      {/if}
+      <div class="flex justify-end pt-1">
+        <Button variant="ghost" onclick={() => (dialog = null)}>{$t.docker.close}</Button>
       </div>
     </div>
   </Modal>

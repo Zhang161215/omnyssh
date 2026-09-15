@@ -21,6 +21,7 @@ use ratatui::{
 };
 
 use crate::app::{AppAction, AppState, SnippetPopup, SnippetsView, ViewState};
+use crate::i18n::t;
 use crate::ui::popup;
 use omnyssh_core::config::snippets::SnippetScope;
 
@@ -32,8 +33,11 @@ use omnyssh_core::config::snippets::SnippetScope;
 pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState) {
     if area.width < 40 || area.height < 6 {
         frame.render_widget(
-            Paragraph::new("Terminal too small for snippets screen.")
-                .style(Style::default().fg(view.theme.text_error)),
+            Paragraph::new(t(
+                "终端太小，无法显示片段界面。",
+                "Terminal too small for snippets screen.",
+            ))
+            .style(Style::default().fg(view.theme.text_error)),
             area,
         );
         return;
@@ -52,10 +56,10 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
     if let Some(popup_val) = &sv.popup {
         match popup_val {
             SnippetPopup::Add(form) => {
-                popup::render_snippet_form(frame, form, "Add Snippet", &view.theme)
+                popup::render_snippet_form(frame, form, t("添加片段", "Add Snippet"), &view.theme)
             }
             SnippetPopup::Edit { form, .. } => {
-                popup::render_snippet_form(frame, form, "Edit Snippet", &view.theme)
+                popup::render_snippet_form(frame, form, t("编辑片段", "Edit Snippet"), &view.theme)
             }
             SnippetPopup::DeleteConfirm(idx) => {
                 let name = state
@@ -110,7 +114,7 @@ fn render_header(frame: &mut Frame, area: Rect, view: &ViewState) {
     let count = sv.filtered_indices.len();
 
     let mut spans: Vec<Span> = vec![Span::styled(
-        format!(" Snippets ({}) ", count),
+        format!(" {} ({}) ", t("片段", "Snippets"), count),
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::BOLD),
@@ -118,18 +122,21 @@ fn render_header(frame: &mut Frame, area: Rect, view: &ViewState) {
 
     if sv.search_mode {
         spans.push(Span::styled(
-            format!("[search: {}] ", sv.search_query),
+            format!("[{}: {}] ", t("搜索", "search"), sv.search_query),
             Style::default().fg(view.theme.accent),
         ));
     } else if !sv.search_query.is_empty() {
         spans.push(Span::styled(
-            format!("[filter: {}] ", sv.search_query),
+            format!("[{}: {}] ", t("筛选", "filter"), sv.search_query),
             Style::default().fg(view.theme.text_warning),
         ));
     }
 
     spans.push(Span::styled(
-        "  n:new  e:edit  d:del  Enter:run  b:broadcast  /:search",
+        t(
+            "  n:新建  e:编辑  d:删除  Enter:运行  b:广播  /:搜索",
+            "  n:new  e:edit  d:del  Enter:run  b:broadcast  /:search",
+        ),
         Style::default().fg(view.theme.text_muted),
     ));
 
@@ -149,9 +156,12 @@ fn render_list(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState
 
     if sv.filtered_indices.is_empty() {
         let msg = if !sv.search_query.is_empty() {
-            "  No snippets match."
+            t("  没有片段匹配。", "  No snippets match.")
         } else {
-            "  No snippets. Press  n  to create your first snippet."
+            t(
+                "  还没有片段。按  n  创建第一条。",
+                "  No snippets. Press  n  to create your first snippet.",
+            )
         };
         frame.render_widget(
             Paragraph::new(Line::from(Span::styled(
@@ -187,8 +197,8 @@ fn render_list(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState
 
             // Scope badge.
             let (badge_text, badge_color) = match s.scope {
-                SnippetScope::Global => ("global", Color::Cyan),
-                SnippetScope::Host => ("host", Color::Yellow),
+                SnippetScope::Global => (t("全局", "global"), Color::Cyan),
+                SnippetScope::Host => (t("主机", "host"), Color::Yellow),
             };
 
             // Command preview — truncated.

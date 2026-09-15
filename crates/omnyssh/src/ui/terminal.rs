@@ -15,6 +15,7 @@ use ratatui::{
 use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::app::{AppAction, AppState, SplitFocus, TermHostPicker, TermTab, ViewState};
+use crate::i18n::t;
 
 // ---------------------------------------------------------------------------
 // Top-level render
@@ -43,12 +44,15 @@ pub fn render(frame: &mut Frame, area: Rect, state: &AppState, view: &ViewState)
         let msg = Paragraph::new(vec![
             Line::from(""),
             Line::from(Span::styled(
-                "  No SSH sessions open.",
+                t("  还没有打开的 SSH 会话。", "  No SSH sessions open."),
                 Style::default().fg(view.theme.text_muted),
             )),
             Line::from(""),
             Line::from(Span::styled(
-                "  Press Ctrl+T to connect to a host.",
+                t(
+                    "  按 Ctrl+T 连接到主机。",
+                    "  Press Ctrl+T to connect to a host.",
+                ),
                 Style::default()
                     .fg(Color::Gray)
                     .add_modifier(Modifier::ITALIC),
@@ -451,9 +455,15 @@ fn render_host_picker(
     frame.render_widget(Clear, popup_area);
 
     let title = if picker.switch_pane_mode {
-        " Switch pane to host (Enter to switch) "
+        t(
+            " 切换窗格到主机（Enter 切换） ",
+            " Switch pane to host (Enter to switch) ",
+        )
     } else {
-        " Connect to host (Enter to open tab) "
+        t(
+            " 连接到主机（Enter 打开标签） ",
+            " Connect to host (Enter to open tab) ",
+        )
     };
 
     let block = Block::default()
@@ -467,7 +477,10 @@ fn render_host_picker(
 
     if state.hosts.is_empty() {
         frame.render_widget(
-            Paragraph::new("  No hosts configured. Add one on the Dashboard (a)."),
+            Paragraph::new(t(
+                "  还没有主机。请在仪表盘按 a 添加。",
+                "  No hosts configured. Add one on the Dashboard (a).",
+            )),
             inner,
         );
         return;

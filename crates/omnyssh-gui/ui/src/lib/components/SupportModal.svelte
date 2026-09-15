@@ -11,23 +11,22 @@
   import { support } from '$lib/stores/support';
   import { openExternal } from '$lib/ipc/openExternal';
   import { lastError } from '$lib/stores/notifications';
+  import { t } from '$lib/i18n';
 
-  type Link = { icon: IconName; title: string; locator: string; url: string };
-
-  const links: Link[] = [
+  const links = $derived([
     {
-      icon: 'star',
-      title: 'Star it on GitHub',
+      icon: 'star' as IconName,
+      title: $t.support.star,
       locator: 'github.com/timhartmann7/omnyssh',
       url: 'https://github.com/timhartmann7/omnyssh'
     },
     {
-      icon: 'telegram',
-      title: 'Follow on Telegram',
+      icon: 'telegram' as IconName,
+      title: $t.support.telegram,
       locator: '@timhartmanndev',
       url: 'https://t.me/timhartmanndev'
     }
-  ];
+  ]);
 
   async function go(url: string): Promise<void> {
     try {
@@ -38,13 +37,13 @@
   }
 </script>
 
-<Modal label="Support OmnySSH" onClose={support.close}>
+<Modal label={$t.support.title} onClose={support.close}>
   <div class="relative p-6">
     <button
       type="button"
       class="absolute right-4 top-4 rounded-full p-1.5 text-muted transition hover:bg-surface-inset hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-      title="Close"
-      aria-label="Close"
+      title={$t.support.close}
+      aria-label={$t.support.close}
       onclick={support.close}
     >
       <Icon name="close" size={16} />
@@ -56,15 +55,14 @@
     </div>
 
     <h2 class="text-xl font-light leading-snug">
-      Free and <span class="font-bold">open source</span>, forever.
+      {$t.support.headlineBefore}<span class="font-bold">{$t.support.headlineBold}</span>{$t.support.headlineAfter}
     </h2>
     <p class="mt-3 text-sm leading-relaxed text-muted">
-      No paid tiers, no ads, no upsells. I build OmnySSH in the open and I do not plan to
-      monetize it.
+      {$t.support.body}
     </p>
 
     <p class="mt-5 text-[11px] font-medium uppercase tracking-[0.18em] text-faint">
-      Two small things help it grow
+      {$t.support.helpGrow}
     </p>
 
     <div class="mt-2.5 space-y-2.5">

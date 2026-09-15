@@ -28,6 +28,12 @@ pub struct Cli {
     #[arg(short, long, value_name = "THEME")]
     pub theme: Option<String>,
 
+    /// Override the UI language (`zh-CN` | `en`).
+    ///
+    /// Defaults to Simplified Chinese. Saved to `config.toml` when set.
+    #[arg(long, value_name = "LANG")]
+    pub lang: Option<String>,
+
     /// Enable verbose debug logging (written to a log file in the config directory).
     #[arg(short, long)]
     pub verbose: bool,

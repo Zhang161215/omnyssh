@@ -21,6 +21,7 @@ use ratatui::{
 use crate::app::{
     AppAction, FileManagerPopup, FileManagerView, FilePanelView, FmPanel, FormField, ViewState,
 };
+use crate::i18n::t;
 use omnyssh_core::ssh::client::Host;
 
 // ---------------------------------------------------------------------------
@@ -66,8 +67,12 @@ pub fn render(frame: &mut Frame, area: Rect, state: &crate::app::AppState, view:
         fm.local.cwd.clone()
     };
     let remote_title = match &fm.connected_host {
-        Some(h) => format!("REMOTE  {} — {}", h, fm.remote.cwd),
-        None => "REMOTE  (not connected)".to_string(),
+        Some(h) => format!("{}  {} — {}", t("远程", "REMOTE"), h, fm.remote.cwd),
+        None => format!(
+            "{}  {}",
+            t("远程", "REMOTE"),
+            t("（未连接）", "(not connected)")
+        ),
     };
 
     // Render panels.
@@ -76,7 +81,7 @@ pub fn render(frame: &mut Frame, area: Rect, state: &crate::app::AppState, view:
         frame,
         local_area,
         &fm.local,
-        &format!("LOCAL  {local_cwd}"),
+        &format!("{}  {local_cwd}", t("本地", "LOCAL")),
         local_active,
         &view.theme,
     );
@@ -166,7 +171,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Navigate", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("浏览", "Navigate")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "Tab",
@@ -174,7 +182,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Switch", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("切换", "Switch")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "Space",
@@ -182,7 +193,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Mark", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("标记", "Mark")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "c",
@@ -190,7 +204,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Copy", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("复制", "Copy")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "p",
@@ -198,7 +215,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Paste", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("粘贴", "Paste")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "n",
@@ -206,7 +226,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":MkDir", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("新建目录", "MkDir")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "Shift+R",
@@ -214,7 +237,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Rename", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("重命名", "Rename")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "Shift+D",
@@ -222,7 +248,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Delete", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("删除", "Delete")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             ".",
@@ -230,7 +259,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Hidden", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("隐藏项", "Hidden")),
+            Style::default().fg(theme.text_muted),
+        ),
         Span::raw("  "),
         Span::styled(
             "Shift+H",
@@ -238,7 +270,10 @@ fn render_hints_header(frame: &mut Frame, area: Rect, theme: &crate::ui::theme::
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled(":Host", Style::default().fg(theme.text_muted)),
+        Span::styled(
+            format!(":{}", t("主机", "Host")),
+            Style::default().fg(theme.text_muted),
+        ),
     ]);
 
     frame.render_widget(Paragraph::new(hints), area);
@@ -538,7 +573,7 @@ fn render_preview_zone(
     }
 
     let block = Block::default()
-        .title(" Preview ")
+        .title(t(" 预览 ", " Preview "))
         .title_alignment(Alignment::Left)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -604,7 +639,7 @@ fn render_transfer_progress(
     theme: &crate::ui::theme::Theme,
 ) {
     let block = Block::default()
-        .title(" Transfer Progress ")
+        .title(t(" 传输进度 ", " Transfer Progress "))
         .title_alignment(Alignment::Left)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -683,13 +718,19 @@ fn render_fm_popup(
             render_fm_delete_confirm(frame, area, paths, theme);
         }
         FileManagerPopup::MkDir(field) => {
-            render_fm_text_input(frame, area, " New Directory ", field, theme);
+            render_fm_text_input(
+                frame,
+                area,
+                t(" 新建目录 ", " New Directory "),
+                field,
+                theme,
+            );
         }
         FileManagerPopup::Rename {
             field,
             original_name,
         } => {
-            let title = format!(" Rename '{}' ", original_name);
+            let title = format!(" {} '{}' ", t("重命名", "Rename"), original_name);
             render_fm_text_input(frame, area, &title, field, theme);
         }
         FileManagerPopup::TransferProgress { .. } => {
@@ -710,7 +751,10 @@ fn render_fm_host_picker(
     frame.render_widget(Clear, popup_area);
 
     let block = Block::default()
-        .title(" Connect Remote Panel — Select Host ")
+        .title(t(
+            " 连接远程面板 — 选择主机 ",
+            " Connect Remote Panel — Select Host ",
+        ))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
@@ -722,7 +766,10 @@ fn render_fm_host_picker(
     if hosts.is_empty() {
         frame.render_widget(
             Paragraph::new(Span::styled(
-                "  No hosts configured. Add a host from the Dashboard (1).",
+                t(
+                    "  还没有主机。请在仪表盘（1）添加一台。",
+                    "  No hosts configured. Add a host from the Dashboard (1).",
+                ),
                 Style::default().fg(theme.text_muted),
             )),
             inner,
@@ -884,7 +931,7 @@ fn render_fm_delete_confirm(
     frame.render_widget(Clear, popup_area);
 
     let block = Block::default()
-        .title(" Confirm Delete ")
+        .title(t(" 确认删除 ", " Confirm Delete "))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)

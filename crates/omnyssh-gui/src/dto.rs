@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use omnyssh_core::config::app_config::UpdateConfig;
 use omnyssh_core::config::snippets::{Snippet, SnippetScope};
 use omnyssh_core::event::{
-    DetectedService, MetricValue, Metrics, ProcessInfo, ServiceKind, ServiceMetric,
+    DetectedService, DockerContainer, MetricValue, Metrics, ProcessInfo, ServiceKind, ServiceMetric,
 };
 use omnyssh_core::ssh::client::{ConnectionStatus, Host, HostSource, MonitorMode};
 use omnyssh_core::ssh::key_setup::KeySetupStep;
@@ -165,12 +165,25 @@ pub struct ServiceMetricDto {
     pub value: i64,
 }
 
+/// A running Docker container from the discovery quick-scan (name, image, ports).
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DockerContainerDto {
+    pub id: String,
+    pub name: String,
+    pub status: String,
+    pub image: String,
+    pub ports: String,
+}
+
 /// A service detected on a host with its quick-scan metrics (tech-gui.md §4.1).
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceDto {
     pub kind: ServiceKindDto,
     pub metrics: Vec<ServiceMetricDto>,
+    /// Running containers (and occupied ports) when `kind` is docker; otherwise empty.
+    pub containers: Vec<DockerContainerDto>,
 }
 
 /// Snippet scope, mirrors `omnyssh_core::config::snippets::SnippetScope`. Wire
@@ -401,11 +414,28 @@ impl From<&ServiceMetric> for ServiceMetricDto {
     }
 }
 
+impl From<&DockerContainer> for DockerContainerDto {
+    fn from(container: &DockerContainer) -> Self {
+        Self {
+            id: container.id.clone(),
+            name: container.name.clone(),
+            status: container.status.clone(),
+            image: container.image.clone(),
+            ports: omnyssh_core::ssh::services::docker::display_ports(&container.ports),
+        }
+    }
+}
+
 impl From<&DetectedService> for ServiceDto {
     fn from(service: &DetectedService) -> Self {
         Self {
             kind: (&service.kind).into(),
             metrics: service.metrics.iter().map(ServiceMetricDto::from).collect(),
+            containers: service
+                .containers
+                .iter()
+                .map(DockerContainerDto::from)
+                .collect(),
         }
     }
 }
@@ -744,6 +774,13 @@ mod tests {
                 metric("containers_running", 4),
                 metric("containers_stopped", 1),
             ],
+            containers: vec![DockerContainer {
+                id: "abc123".into(),
+                name: "nginx-proxy".into(),
+                status: "Up 2 hours".into(),
+                image: "nginx:latest".into(),
+                ports: "0.0.0.0:80->80/tcp, [::]:80->80/tcp".into(),
+            }],
         };
         let dto = ServiceDto::from(&service);
         assert!(matches!(dto.kind, ServiceKindDto::Docker));
@@ -752,6 +789,9 @@ mod tests {
         assert_eq!(dto.metrics[0].value, 4);
         assert_eq!(dto.metrics[1].name, "containers_stopped");
         assert_eq!(dto.metrics[1].value, 1);
+        assert_eq!(dto.containers.len(), 1);
+        assert_eq!(dto.containers[0].name, "nginx-proxy");
+        assert_eq!(dto.containers[0].ports, "0.0.0.0:80->80/tcp");
     }
 
     #[test]
@@ -759,6 +799,7 @@ mod tests {
         let dto = ServiceDto::from(&DetectedService {
             kind: ServiceKind::Nginx,
             metrics: vec![],
+            containers: vec![],
         });
         assert!(matches!(dto.kind, ServiceKindDto::Nginx));
         assert!(dto.metrics.is_empty());

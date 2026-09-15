@@ -108,7 +108,7 @@ describe('ipc event router', () => {
     applyHostStatusChanged({ hostName: 'web-1', status: { kind: 'connected' } });
     applyHostStatusChanged({ hostName: 'web-2', status: { kind: 'connected' } });
     applyMetricsUpdated({ hostName: 'web-2', metrics: { cpuPercent: 90, topProcesses: [], ageSeconds: 0 } });
-    applyServicesDetected({ hostName: 'web-2', services: [{ kind: 'docker', metrics: [] }] });
+    applyServicesDetected({ hostName: 'web-2', services: [{ kind: 'docker', metrics: [], containers: [] }] });
 
     applyHostsLoaded([
       { name: 'web-1', hostname: '10.0.0.1', user: 'root', port: 22, tags: [], source: 'manual', hasKey: false, monitoring: 'ssh' }
@@ -123,17 +123,17 @@ describe('ipc event router', () => {
   it('routes a services-detected payload into the services store', () => {
     applyServicesDetected({
       hostName: 'web-1',
-      services: [{ kind: 'docker', metrics: [{ name: 'containers_running', value: 4 }] }]
+      services: [{ kind: 'docker', metrics: [{ name: 'containers_running', value: 4 }], containers: [] }]
     });
 
     expect(get(services).get('web-1')).toEqual({
       kind: 'detected',
-      services: [{ kind: 'docker', metrics: [{ name: 'containers_running', value: 4 }] }]
+      services: [{ kind: 'docker', metrics: [{ name: 'containers_running', value: 4 }], containers: [] }]
     });
   });
 
   it('routes a services-failed payload, replacing a prior detection', () => {
-    applyServicesDetected({ hostName: 'web-1', services: [{ kind: 'nginx', metrics: [] }] });
+    applyServicesDetected({ hostName: 'web-1', services: [{ kind: 'nginx', metrics: [], containers: [] }] });
     applyServicesFailed({ hostName: 'web-1', message: 'scan timed out' });
 
     expect(get(services).get('web-1')).toEqual({ kind: 'failed', message: 'scan timed out' });
