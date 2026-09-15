@@ -22,7 +22,11 @@
   import Modal from '$lib/components/Modal.svelte';
   import { interpolate, t } from '$lib/i18n';
 
-  type Dialog = { kind: 'add' } | { kind: 'edit'; host: HostDto } | { kind: 'delete'; host: HostDto };
+  type Dialog =
+    | { kind: 'add' }
+    | { kind: 'edit'; host: HostDto }
+    | { kind: 'delete'; host: HostDto }
+    | { kind: 'docker'; hostName: string };
 
   let dialog = $state<Dialog | null>(null);
 
@@ -358,45 +362,27 @@
             {/if}
           {/if}
 
-          <!-- Detected services + running Docker containers / ports -->
+          <!-- Detected services. Docker names/ports stay off the card until 「Docker 统计」. -->
           {#if card.detectedServices.length}
             <div class="flex flex-wrap gap-1.5">
               {#each card.detectedServices as service (service.kind)}
-                <Chip>
-                  {#if service.kind === 'docker' && service.total != null}
-                    {service.name} · {service.total === 0
-                      ? $t.docker.none
-                      : interpolate($t.docker.ofTotal, {
-                          running: service.running ?? 0,
-                          total: service.total
-                        })}
-                  {:else}
-                    {service.name}
-                  {/if}
-                </Chip>
+                {#if service.kind === 'docker'}
+                  <button
+                    type="button"
+                    class="inline-flex items-center rounded-full bg-surface-inset px-3 py-1 text-xs font-medium text-fg transition hover:bg-accent hover:text-accent-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                    title={$t.docker.stats}
+                    aria-label={$t.docker.stats}
+                    onclick={() => (dialog = { kind: 'docker', hostName: card.host.name })}
+                  >
+                    {$t.docker.stats}
+                  </button>
+                {:else}
+                  <Chip>{service.name}</Chip>
+                {/if}
               {/each}
             </div>
           {:else if card.servicesError}
             <div class="text-xs text-faint">{$t.dashboard.scanUnavailable}</div>
-          {/if}
-
-          {#if card.dockerContainers.length}
-            <div class="space-y-1.5 border-t border-default pt-3">
-              <p class="text-[11px] uppercase tracking-wider text-faint">{$t.docker.title}</p>
-              <ul class="space-y-1">
-                {#each card.dockerContainers as c (c.id + c.name)}
-                  <li class="flex items-start justify-between gap-3 text-xs">
-                    <span class="min-w-0 truncate font-mono text-muted" title={c.image}>{c.name}</span>
-                    <span
-                      class="max-w-[55%] shrink-0 truncate text-right text-faint"
-                      title={c.ports || $t.docker.unpublished}
-                    >
-                      {c.ports || $t.docker.unpublished}
-                    </span>
-                  </li>
-                {/each}
-              </ul>
-            </div>
           {/if}
         </Surface>
       {/each}
@@ -427,6 +413,60 @@
       <div class="flex justify-end gap-2 pt-1">
         <Button variant="ghost" onclick={() => (dialog = null)}>{$t.dashboard.cancel}</Button>
         <Button variant="primary" onclick={() => confirmDelete(host.name)}>{$t.dashboard.deleteAction}</Button>
+      </div>
+    </div>
+  </Modal>
+{:else if dialog?.kind === 'docker'}
+  {@const dockerHostName = dialog.kind === 'docker' ? dialog.hostName : ''}
+  {@const dockerCard = $serverCards.find((c) => c.host.name === dockerHostName)}
+  {@const dockerSvc = dockerCard?.detectedServices.find((s) => s.kind === 'docker')}
+  <Modal label={$t.docker.stats} onClose={() => (dialog = null)}>
+    <div class="space-y-3 px-5 py-4">
+      <h2 class="text-sm font-semibold">{$t.docker.stats}</h2>
+      {#if dockerCard}
+        <p class="text-sm text-muted">
+          {dockerCard.host.name}
+          {#if dockerSvc?.total != null}
+            <span class="text-faint">
+              · {dockerSvc.total === 0
+                ? $t.docker.none
+                : interpolate($t.docker.ofTotal, {
+                    running: dockerSvc.running ?? 0,
+                    total: dockerSvc.total
+                  })}
+            </span>
+          {/if}
+        </p>
+        {#if dockerCard.dockerContainers.length}
+          <div class="max-h-[48vh] overflow-auto">
+            <div
+              class="mb-1.5 grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-3 text-[11px] uppercase tracking-wider text-faint"
+            >
+              <span>{$t.docker.container}</span>
+              <span class="text-right">{$t.docker.ports}</span>
+            </div>
+            <ul class="space-y-1.5">
+              {#each dockerCard.dockerContainers as c (c.id + c.name)}
+                <li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] items-start gap-3 text-xs">
+                  <span class="min-w-0 truncate font-mono text-muted" title={c.image}>{c.name}</span>
+                  <span
+                    class="min-w-0 break-all text-right text-faint"
+                    title={c.ports || $t.docker.unpublished}
+                  >
+                    {c.ports || $t.docker.unpublished}
+                  </span>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {:else}
+          <p class="text-sm text-muted">{$t.docker.empty}</p>
+        {/if}
+      {:else}
+        <p class="text-sm text-muted">{$t.docker.empty}</p>
+      {/if}
+      <div class="flex justify-end pt-1">
+        <Button variant="ghost" onclick={() => (dialog = null)}>{$t.docker.close}</Button>
       </div>
     </div>
   </Modal>

@@ -61,10 +61,13 @@ const zhCN = {
     running: '运行中',
     ofTotal: '{running}/{total} 运行中',
     none: '无容器',
+    stats: 'Docker 统计',
     title: '运行中的容器',
+    container: '容器',
     ports: '占用端口',
     unpublished: '未发布',
-    empty: '当前没有运行中的容器'
+    empty: '当前没有运行中的容器',
+    close: '关闭'
   },
   status: {
     ready: '就绪',
@@ -327,10 +330,13 @@ const en = {
     running: 'running',
     ofTotal: '{running}/{total} running',
     none: 'no containers',
+    stats: 'Docker stats',
     title: 'Running containers',
+    container: 'Container',
     ports: 'Ports',
     unpublished: 'unpublished',
-    empty: 'No running containers'
+    empty: 'No running containers',
+    close: 'Close'
   },
   status: {
     ready: 'Ready',

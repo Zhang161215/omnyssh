@@ -52,7 +52,7 @@ export interface ServerCard {
   osInfo?: string;
   topProcesses: ProcessDto[];
   detectedServices: CardService[];
-  /** Running Docker containers (and occupied ports) when Docker was detected. */
+  /** Running Docker containers (and occupied ports) for the Docker 统计 popup. */
   dockerContainers: DockerContainerDto[];
   servicesError?: string;
 }

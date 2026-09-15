@@ -2,6 +2,7 @@
 //! execute snippets, quick-execute commands, and quick views.
 
 use super::*;
+use crate::i18n::t;
 use omnyssh_core::config::snippets::SnippetScope;
 use omnyssh_core::ssh::session::SshSession;
 
@@ -469,7 +470,7 @@ impl App {
         let (command, service_name) = match service_kind {
             ServiceKind::Docker => (
                 "docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'",
-                "Docker 容器",
+                t("Docker 统计", "Docker stats"),
             ),
             ServiceKind::Nginx => (
                 "echo '=== Nginx Status ===' && systemctl status nginx --no-pager || service nginx status",
@@ -489,11 +490,16 @@ impl App {
             ),
         };
 
+        let title = match service_kind {
+            ServiceKind::Docker => service_name.to_string(),
+            _ => format!("Quick View: {}", service_name),
+        };
+
         // Open Results popup with a single pending entry
         self.view.snippets_view.popup = Some(SnippetPopup::Results {
             entries: vec![SnippetResultEntry {
                 host_name: host_name.clone(),
-                snippet_name: format!("Quick View: {}", service_name),
+                snippet_name: title.clone(),
                 output: Ok(String::new()),
                 pending: true,
             }],
@@ -502,7 +508,7 @@ impl App {
 
         let tx = self.core_tx.clone();
         let cmd = command.to_string();
-        let sname = format!("Quick View: {}", service_name);
+        let sname = title;
         tokio::spawn(async move {
             let result = run_command_on_host(&host, &cmd).await;
             let _ = tx

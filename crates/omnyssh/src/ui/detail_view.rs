@@ -18,7 +18,6 @@ use crate::ui::theme::threshold_color;
 use crate::ui::theme::Theme;
 use omnyssh_core::event::{DetectedService, Metrics, ServiceKind};
 use omnyssh_core::ssh::client::{ConnectionStatus, MonitorMode};
-use omnyssh_core::ssh::services::docker::display_ports;
 
 // ---------------------------------------------------------------------------
 // Render
@@ -42,7 +41,7 @@ use omnyssh_core::ssh::services::docker::display_ports;
 /// ║  1. firefox            cpu 12.3%   mem  4.5%                ║
 /// ╠═════════════════════════════════════════════════════════════╣
 /// ║ SERVICES                                                    ║
-/// ║ 🐳 Docker         8 running, 1 stopped    [containers: F4] ║
+/// ║ 🐳 Docker 统计    8 running, 1 stopped    [4]              ║
 /// ║ 🌐 Nginx          active, 0 errors/5min   [logs: F5]       ║
 /// ║ 🐘 PostgreSQL 16  repl lag: 2.3s          [queries: F6]    ║
 /// ╚═════════════════════════════════════════════════════════════╝
@@ -416,56 +415,10 @@ fn render_services(frame: &mut Frame, area: Rect, services: &[DetectedService], 
             ]);
 
             lines.push(line);
-
-            if service.kind == ServiceKind::Docker {
-                if service.containers.is_empty() {
-                    lines.push(Line::from(Span::styled(
-                        t(
-                            "    （当前没有运行中的容器）",
-                            "    (no running containers)",
-                        ),
-                        Style::default().fg(theme.text_muted),
-                    )));
-                } else {
-                    lines.push(Line::from(Span::styled(
-                        t(
-                            "    容器                         占用端口",
-                            "    CONTAINER                    PORTS",
-                        ),
-                        Style::default().fg(theme.text_muted),
-                    )));
-                    for container in &service.containers {
-                        let ports = display_ports(&container.ports);
-                        let ports = if ports.is_empty() {
-                            t("未发布", "unpublished").to_string()
-                        } else {
-                            ports
-                        };
-                        lines.push(Line::from(vec![
-                            Span::raw("    "),
-                            Span::styled(
-                                format!("{:<28}", truncate_name(&container.name, 28)),
-                                Style::default().fg(theme.text_primary),
-                            ),
-                            Span::styled(ports, Style::default().fg(theme.accent)),
-                        ]));
-                    }
-                }
-            }
         }
     }
 
     frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
-}
-
-fn truncate_name(name: &str, max: usize) -> String {
-    if name.chars().count() <= max {
-        name.to_string()
-    } else {
-        let mut s: String = name.chars().take(max.saturating_sub(1)).collect();
-        s.push('…');
-        s
-    }
 }
 
 /// Get icon for service kind.
@@ -482,7 +435,7 @@ fn service_icon(kind: &ServiceKind) -> (&'static str, Color) {
 /// Get display name for service.
 fn service_name_display(kind: &ServiceKind) -> String {
     match kind {
-        ServiceKind::Docker => "Docker".to_string(),
+        ServiceKind::Docker => t("Docker 统计", "Docker stats").to_string(),
         ServiceKind::Nginx => "Nginx".to_string(),
         ServiceKind::PostgreSQL => "PostgreSQL".to_string(),
         ServiceKind::Redis => "Redis".to_string(),
@@ -641,7 +594,18 @@ fn render_hints(frame: &mut Frame, area: Rect, theme: &Theme) {
         ),
         Span::raw("  "),
         Span::styled(
-            "4-9",
+            "4",
+            Style::default()
+                .fg(theme.accent)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(
+            t(":Docker 统计", ":Docker stats"),
+            Style::default().fg(theme.text_muted),
+        ),
+        Span::raw("  "),
+        Span::styled(
+            "5-8",
             Style::default()
                 .fg(theme.accent)
                 .add_modifier(Modifier::BOLD),

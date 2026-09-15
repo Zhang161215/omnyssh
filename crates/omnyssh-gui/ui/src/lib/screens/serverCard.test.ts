@@ -147,7 +147,7 @@ describe('deriveCard — detected services', () => {
     });
   });
 
-  it('carries running docker containers and their ports onto the card', () => {
+  it('keeps running docker containers and ports for the stats popup, not the card face', () => {
     const svc: HostServices = {
       kind: 'detected',
       services: [
